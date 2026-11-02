@@ -46,14 +46,9 @@ function categoryFor(destination) {
 function destinationText(destination) {
   if (!destination) return '';
 
-  return [
-    destination.short_description || destination.description_detail,
-    destination.highlight ? `Điểm nổi bật: ${destination.highlight}` : '',
-    destination.best_time ? `Thời điểm đẹp: ${destination.best_time}` : '',
-    destination.estimated_duration ? `Thời lượng gợi ý: ${destination.estimated_duration}` : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  // This introduction is editorial content from the destinations sheet.
+  // Do not synthesize it by concatenating highlight/time/duration fields.
+  return destination.description_detail || '';
 }
 
 function destinationMedia(destination) {
