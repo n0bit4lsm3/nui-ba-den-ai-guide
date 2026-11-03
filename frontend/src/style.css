@@ -2031,19 +2031,25 @@ body {
     text-align: center;
   }
 
+  /* Tiêu đề nhỏ, một dòng, để video nằm trọn trong màn không phải cuộn. */
   .video-page .topbar h2 {
-    font-size: 36px;
+    font-size: 24px;
   }
 
   .video-page .topbar .small-text {
-    max-width: 520px;
-    margin-inline: auto;
+    margin-top: 2px;
+    font-size: var(--text-xs);
   }
 
   /* Hai cột bằng nhau để video trải hết bề rộng; hai nút tự giới hạn 320px và kề nhau ở giữa. */
   .video-page {
     padding-inline: 24px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 14px;
+  }
+
+  .intro-video {
+    max-height: calc(100dvh - 300px);
   }
 
   .video-page .primary-btn {
@@ -2408,7 +2414,7 @@ body {
   .video-page,
   .thankyou-page {
     min-height: 0;
-    padding-block: 32px;
+    padding-block: 22px 26px;
   }
 
   .video-page .mascot-hello {
