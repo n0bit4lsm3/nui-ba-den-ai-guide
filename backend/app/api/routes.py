@@ -2,7 +2,9 @@
 
 import json
 import logging
+import re
 from collections.abc import AsyncGenerator
+from typing import Any
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, BackgroundTasks
@@ -69,6 +71,58 @@ def get_destination(destination_id: int):
     return postgres.destinations().get(destination_id, {})
 
 
+_SEQ_STEP_RE = re.compile(r"^(?:\((?P<note>[^)]*)\)\s*)?(?P<code>TN\d+)?\s*(?:\((?P<tail>[^)]*)\))?$")
+
+
+@router.get("/api/itineraries")
+def list_itineraries():
+    """Itineraries from the Excel sheet, with dest_sequence resolved to destination cards."""
+    by_code = {
+        str(item.get("dest_code") or ""): item
+        for item in postgres.destinations().values()
+    }
+    rows = postgres.load_rows().get("itineraries", [])
+    items = []
+    for row in rows:
+        steps = []
+        for raw in str(row.get("dest_sequence") or "").split(">"):
+            raw = raw.strip()
+            if not raw:
+                continue
+            match = _SEQ_STEP_RE.match(raw)
+            note = ""
+            dest = None
+            if match:
+                note = (match.group("note") or match.group("tail") or "").strip()
+                dest = by_code.get(match.group("code") or "")
+            else:
+                note = raw.strip("() ")
+            steps.append(
+                {
+                    "note": note,
+                    "destination_id": dest.get("id") if dest else None,
+                    "name": dest.get("name") if dest else "",
+                    "location": dest.get("location") if dest else "",
+                    "image_url": dest.get("image_url") if dest else "",
+                }
+            )
+        items.append(
+            {
+                "id": row.get("itinerary_id", ""),
+                "title": row.get("title", ""),
+                "duration": row.get("duration", ""),
+                "suitable_for": row.get("suitable_for", ""),
+                "description": row.get("description", ""),
+                "best_time": row.get("best_time", ""),
+                "estimated_cost_note": row.get("estimated_cost_note", ""),
+                "difficulty_level": row.get("difficulty_level", ""),
+                "source_url": row.get("source_url", ""),
+                "steps": steps,
+            }
+        )
+    return {"total": len(items), "itineraries": items}
+
+
 @router.get("/api/support")
 def support_contacts():
     return {
@@ -127,6 +181,28 @@ async def chat(payload: ChatRequest):
     return {"answer": result["answer"], "retrieval": result["retrieval"]}
 
 
+async def _fixed_answer_events(
+    payload: ChatRequest,
+    reply: dict[str, Any],
+) -> AsyncGenerator[bytes, None]:
+    """Stream a ready answer word by word so the UI keeps its typing effect."""
+    yield b"event: start\ndata: {}\n\n"
+    for token in re.findall(r"\S+\s*|\s+", reply["answer"]):
+        body = json.dumps({"token": token}, ensure_ascii=False)
+        yield f"event: token\ndata: {body}\n\n".encode("utf-8")
+
+    metadata = reply["metadata"]
+    await safe_save_chat(
+        payload.session_id,
+        metadata.get("destination_id"),
+        payload.message,
+        reply["answer"],
+        metadata,
+    )
+    body = json.dumps({"answer": reply["answer"], "retrieval": reply["retrieval"]}, ensure_ascii=False)
+    yield f"event: done\ndata: {body}\n\n".encode("utf-8")
+
+
 @router.post("/api/chat/stream")
 async def chat_stream(payload: ChatRequest):
     destination_id, destination = chat_service.resolve_destination(
@@ -134,6 +210,20 @@ async def chat_stream(payload: ChatRequest):
         payload.destination_id,
         [item.model_dump() for item in payload.history],
     )
+    engine_reply = await chat_service.rule_engine_reply(
+        payload.message,
+        destination_id,
+        payload.destination_id,
+        destination,
+        payload.session_id,
+    )
+    if engine_reply:
+        return StreamingResponse(
+            _fixed_answer_events(payload, engine_reply),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
     destination_name = destination.get("name") if destination else None
     query_info = understand_query(payload.message, destination_name)
     contexts = []

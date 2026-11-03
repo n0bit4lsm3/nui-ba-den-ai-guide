@@ -1,7 +1,6 @@
-const LOCAL_API_URL = 'http://localhost:8003';
-const isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
-
-export const API_URL = (import.meta.env.VITE_API_URL || (isLocalHost ? LOCAL_API_URL : '')).replace(/\/$/, '');
+// Empty means same origin: Vercel serves /api next to the page, and the Vite dev
+// server proxies /api to `npm run dev:api` (or the Python backend) on port 8003.
+export const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 export const PUBLIC_APP_URL = (
   import.meta.env.VITE_PUBLIC_APP_URL || 'https://ai-ecotourism-assistant.vercel.app'
 ).replace(/\/$/, '');

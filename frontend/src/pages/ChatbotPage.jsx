@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Bot, MoreHorizontal, PhoneCall, Send, X } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, PhoneCall, Send, X } from 'lucide-react';
 
 import { API_URL, assetUrl } from '../api';
+import MascotHello from '../components/MascotHello';
 
 const FALLBACK_SUPPORT = {
   lost_guidance: [
@@ -80,7 +81,7 @@ function renderInline(text, keyPrefix) {
       if (href.length < token.length) parts.push(token.slice(href.length));
     }
 
-    lastIndex = match.lastIndex;
+    lastIndex = pattern.lastIndex;
   }
 
   if (lastIndex < text.length) parts.push(text.slice(lastIndex));
@@ -108,7 +109,8 @@ function splitMarkdownRow(line) {
 function normalizeMarkdownText(text) {
   const raw = String(text || '')
     .replace(/\r\n?/g, '\n')
-    .replace(/(?<=\p{L})(?=\d)/gu, ' ')
+    // Two letters before the digit so short labels such as "T7" stay intact.
+    .replace(/(?<=\p{L}{2})(?=\d)/gu, ' ')
     .replace(/(?<=\d)(?=(?:đ|vnđ|vnd|đồng|phút|giờ|tiếng|km|mét|người|lượt|vé)\b)/giu, ' ')
     .replace(/(?<=[,;:!?])(?=\p{L})/gu, ' ')
     .replace(/(?<!\d):(?=\d)/g, ': ')
@@ -303,11 +305,11 @@ function MessageSources({ sources = [] }) {
   );
 }
 
-export default function ChatbotPage({ destination, onBack, onDone }) {
+export default function ChatbotPage({ destination, initialQuestion, onInitialQuestionUsed, onBack, onDone }) {
   const [messages, setMessages] = useState([
     {
       role: 'bot',
-      text: `Xin chào! Mình là AI Guide. Bạn có thể hỏi mình về ${destination?.name || 'địa điểm này'}.`,
+      text: `Xin chào! Mình là AI Guide. Bạn hỏi gì về ${destination?.name || 'Núi Bà Đen'} cũng được: giá vé, giờ cáp treo, ăn uống, đường đi…`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -325,6 +327,15 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
   const inputRef = useRef(null);
   const prevLoadingRef = useRef(false);
   const sessionIdRef = useRef(`session_${destination?.id || 'default'}_${Date.now()}`);
+  const initialQuestionRef = useRef(initialQuestion);
+
+  useEffect(() => {
+    const question = initialQuestionRef.current;
+    if (!question) return;
+    initialQuestionRef.current = null;
+    onInitialQuestionUsed?.();
+    ask(question);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -465,6 +476,7 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
           text: data.answer || 'AI chưa có câu trả lời phù hợp.',
           media: data.retrieval?.media || [],
           sources: data.retrieval?.sources || [],
+          followups: data.retrieval?.followups || [],
         };
       } finally {
         window.clearTimeout(timeout);
@@ -492,6 +504,7 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
       let standardizedText = '';
       let botMedia = [];
       let botSources = [];
+      let botFollowups = [];
       let buffer = '';
 
       while (true) {
@@ -517,6 +530,7 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
                 standardizedText = data.answer || '';
                 botMedia = data.retrieval?.media || [];
                 botSources = data.retrieval?.sources || [];
+                botFollowups = data.retrieval?.followups || [];
               } catch {}
             }
             continue;
@@ -548,6 +562,7 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
               standardizedText = data.answer || '';
               botMedia = data.retrieval?.media || [];
               botSources = data.retrieval?.sources || [];
+              botFollowups = data.retrieval?.followups || [];
             } else if (data.token) {
               botText += data.token;
               setStreamingText(botText);
@@ -562,7 +577,7 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
       if (botText) {
         setMessages((prev) => [
           ...prev,
-          { role: 'bot', text: botText, media: botMedia, sources: botSources },
+          { role: 'bot', text: botText, media: botMedia, sources: botSources, followups: botFollowups },
         ]);
       }
     } catch (e) {
@@ -570,7 +585,7 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
         const answer = await askWithoutStream();
         setMessages((prev) => [
           ...prev,
-          { role: 'bot', text: answer.text, media: answer.media, sources: answer.sources },
+          { role: 'bot', text: answer.text, media: answer.media, sources: answer.sources, followups: answer.followups },
         ]);
         setLoading(false);
         setStreamingText('');
@@ -597,7 +612,18 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
       <div className="page chatbot-page">
         <div className="chatbot-nav-row">
           <button className="back-btn" onClick={onBack}>
-            <ArrowLeft size={18} /> Địa điểm
+            <ArrowLeft size={22} /> <img alt="" src="/mascot-160.png" /> <span>{destination?.name || 'Địa điểm'}</span>
+          </button>
+          <button
+            aria-controls="support-dialog"
+            aria-expanded={supportOpen}
+            aria-label="Mở hotline và hỗ trợ khi bị lạc"
+            className="support-trigger"
+            onClick={() => setSupportOpen(true)}
+            title="Hotline & hỗ trợ"
+            type="button"
+          >
+            <PhoneCall aria-hidden="true" size={22} />
           </button>
           <div className="chatbot-menu-wrap" ref={menuRef}>
             <button
@@ -626,34 +652,24 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
           </div>
         </div>
 
-        <div className="topbar">
-          <div>
-            <div className="badge" style={{ color: '#1f875a', background: '#eaf7ef' }}>
-              <Bot size={15} /> AI Chatbot
-            </div>
-            <h2>Hỏi AI Guide</h2>
-          </div>
-          <button
-            aria-controls="support-dialog"
-            aria-expanded={supportOpen}
-            aria-label="Mở hotline và hỗ trợ khi bị lạc"
-            className="support-trigger"
-            onClick={() => setSupportOpen(true)}
-            title="Hotline & hỗ trợ"
-            type="button"
-          >
-            <PhoneCall aria-hidden="true" size={21} />
-          </button>
-        </div>
-
         {!hasAsked && (
           <div className="quick-questions" aria-label="Câu hỏi gợi ý">
-            <button onClick={() => ask('Có gì chơi ở đây?')}>Có gì chơi?</button>
-            <button onClick={() => ask('Đi mùa nào đẹp?')}>Đi mùa nào đẹp?</button>
-            <button onClick={() => ask('Giá vé và giờ hoạt động hiện tại thế nào?')}>Giá vé & giờ mở cửa?</button>
-            <button onClick={() => ask('Gợi ý góc chụp ảnh đẹp ở đây')}>Góc chụp đẹp?</button>
-            <button onClick={() => ask('Thời tiết và lưu ý an toàn khi đi là gì?')}>Thời tiết & an toàn?</button>
-            <button onClick={() => ask('Có phù hợp cho gia đình không?')}>Phù hợp gia đình?</button>
+            <button onClick={() => ask('Có gì chơi ở đây?')}><em>🎡</em>Có gì chơi?</button>
+            <button onClick={() => ask('Giá vé cáp treo bao nhiêu?')}><em>🎫</em>Giá vé cáp treo?</button>
+            <button onClick={() => ask('Cáp treo chạy mấy giờ?')}><em>🕒</em>Giờ cáp treo?</button>
+            <button onClick={() => ask('Ăn uống trên núi thế nào?')}><em>🍜</em>Ăn uống ở đâu?</button>
+            <button onClick={() => ask('Nên đi săn mây lúc nào?')}><em>☁️</em>Săn mây lúc nào?</button>
+            <button onClick={() => ask('Gợi ý lịch trình đi Núi Bà Đen')}><em>🗺️</em>Gợi ý lịch trình</button>
+          </div>
+        )}
+
+        {!hasAsked && (
+          <div className="chat-intro">
+            <MascotHello bubble={false} size={64} />
+            <span>
+              <b>AI Guide Núi Bà Đen</b>
+              <small>Hỏi gì cũng được, mình trả lời theo dữ liệu chính thức.</small>
+            </span>
           </div>
         )}
 
@@ -663,12 +679,25 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
               <MarkdownMessage text={message.text} />
               {message.role === 'bot' && <MessageMedia media={message.media} />}
               {message.role === 'bot' && <MessageSources sources={message.sources} />}
+              {message.role === 'bot' && !loading && index === messages.length - 1 && message.followups?.length > 0 && (
+                <div className="quick-questions followup-questions" aria-label="Hỏi tiếp">
+                  {message.followups.map((question) => (
+                    <button key={question} onClick={() => ask(question)} type="button">{question}</button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           {loading && (
             <div className="msg bot streaming-bubble">
-              <MarkdownMessage text={visibleStreamingText || ' '} />
-              <span className="typing-cursor" />
+              {visibleStreamingText ? (
+                <>
+                  <MarkdownMessage text={visibleStreamingText} />
+                  <span className="typing-cursor" />
+                </>
+              ) : (
+                <span className="typing-dots" aria-label="Đang trả lời"><i /><i /><i /></span>
+              )}
             </div>
           )}
           <div ref={bottomRef} />
@@ -678,12 +707,12 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
           <input
             disabled={loading}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Nhập câu hỏi..."
+            placeholder="Nhập câu hỏi"
             ref={inputRef}
             value={input}
           />
           <button aria-label="Gửi câu hỏi" disabled={loading || !input.trim()} type="submit">
-            <Send size={18} />
+            <Send size={20} /> Gửi
           </button>
         </form>
 

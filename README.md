@@ -36,3 +36,34 @@ WEB_KNOWLEDGE_MAX_CONTEXTS=4
 ```
 
 `GET /api/status` trả về `web_knowledge.documents` để theo dõi số nguồn đã lưu.
+
+
+## Deploy lên Vercel (không cần backend riêng)
+
+Thư mục `frontend/` tự chứa mọi thứ: giao diện React và các API dưới `frontend/api/`
+(Vercel Serverless Functions, Node). API trả lời bằng engine luật `frontend/lib/engine.js` trên dữ liệu
+`frontend/lib/data.json` xuất từ file Excel, nên không cần Python, database hay API key.
+
+1. Đẩy code lên GitHub.
+2. Vào vercel.com → **Add New Project** → Import repo.
+3. **Root Directory** chọn `frontend` (Framework Preset: Vite, tự nhận). Không cần biến môi trường.
+4. **Deploy**. Link dạng `https://<tên-dự-án>.vercel.app`. Mã QR mẫu trên màn hình đầu trỏ tới
+   `https://ai-ecotourism-assistant.vercel.app`; nếu tên dự án khác, đặt biến `VITE_PUBLIC_APP_URL`.
+
+Mỗi lần `git push` Vercel tự deploy lại.
+
+### Khi sửa file Excel
+```bash
+cd frontend
+XLSX="/đường/dẫn/Database NBĐ_v2_2026-10-31.xlsx" npm run data   # cần python3 + openpyxl
+git add lib/data.json && git commit -m "data: cập nhật từ Excel" && git push
+```
+
+### Chạy local không cần Python
+```bash
+cd frontend
+npm install
+npm run dev:api   # API Node ở cổng 8003
+npm run dev       # giao diện ở http://localhost:5173, tự proxy /api sang 8003
+```
+Backend Python (RAG + LLM + tìm web) vẫn còn trong `backend/` cho ai muốn bật LLM; Vercel không dùng tới.

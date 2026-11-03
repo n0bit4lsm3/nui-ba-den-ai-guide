@@ -1,19 +1,20 @@
+import { Check } from 'lucide-react';
+
 export default function ThankYouPage({ onRestart }) {
   return (
     <div className="phone">
-      <div className="page">
-        <div className="success-icon">✅</div>
+      <div className="page thankyou-page">
+        <div className="success-icon" aria-hidden="true">
+          <Check strokeWidth={3} />
+        </div>
 
-        <h2 style={{ textAlign: 'center' }}>Cảm ơn bạn!</h2>
-        <p className="small-text" style={{ textAlign: 'center' }}>
-          Hy vọng bạn có trải nghiệm thú vị cùng AI Ecotourism
-          Assistant.
+        <h2>Cảm ơn bạn</h2>
+        <p className="small-text">
+          Chúc bạn có chuyến đi Núi Bà Đen thật vui. Quét mã QR ở điểm tiếp theo để hỏi tiếp.
         </p>
 
-        <div style={{ height: 30 }} />
-
         <button className="primary-btn" onClick={onRestart}>
-          Quay lại màn hình QR
+          Về màn hình quét QR
         </button>
       </div>
     </div>

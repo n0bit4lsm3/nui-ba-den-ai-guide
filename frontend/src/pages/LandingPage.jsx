@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ChevronLeft, ChevronRight, MapPin, MessageCircle, Mountain, Navigation, Sparkles, Trees } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, MapPin, Mountain, Navigation, Route, Sparkles, Trees } from 'lucide-react';
 
 import { API_URL, assetUrl } from '../api';
 
@@ -11,16 +11,16 @@ const LOCATION_CATEGORIES = [
     icon: Mountain,
   },
   {
-    key: 'foot',
-    label: 'Chân núi',
-    description: 'Cổng chính, nhà ga, điểm trung chuyển và dịch vụ ở chân núi.',
-    icon: Trees,
-  },
-  {
     key: 'slope',
     label: 'Sườn núi',
     description: 'Các điểm tâm linh, hang động và tuyến tham quan ở sườn núi.',
     icon: Sparkles,
+  },
+  {
+    key: 'foot',
+    label: 'Chân núi',
+    description: 'Cổng chính, nhà ga, điểm trung chuyển và dịch vụ ở chân núi.',
+    icon: Trees,
   },
 ];
 
@@ -67,7 +67,7 @@ function destinationMedia(destination) {
   }];
 }
 
-export default function LandingPage({ destination, onBack, onNext }) {
+export default function LandingPage({ destination, onBack, onNext, onPlan }) {
   const [destinations, setDestinations] = useState(destination ? [destination] : []);
   // The QR destination is only used as initial data while the full list loads.
   // Users must still choose a region, then a destination, before entering AI Guide.
@@ -112,7 +112,11 @@ export default function LandingPage({ destination, onBack, onNext }) {
 
   const filteredDestinations = useMemo(() => {
     if (!activeCategory) return [];
-    return destinations.filter((item) => categoryFor(item) === activeCategory);
+    // destinations.display_order (Excel) pins a place near the top; the rest keep sheet order.
+    const rank = (item) => (Number(item.display_order) > 0 ? Number(item.display_order) : Number.MAX_SAFE_INTEGER);
+    return destinations
+      .filter((item) => categoryFor(item) === activeCategory)
+      .sort((a, b) => rank(a) - rank(b));
   }, [activeCategory, destinations]);
   const hasAnimatedThumbnails = useMemo(
     () => filteredDestinations.some((item) => destinationMedia(item).length > 1),
@@ -125,7 +129,9 @@ export default function LandingPage({ destination, onBack, onNext }) {
     [selectedDestination],
   );
   const activeMedia = selectedMedia[activeMediaIndex] || selectedMedia[0];
-  const heroImageUrl = assetUrl(activeMedia?.url || filteredDestinations[0]?.image_url);
+  const heroImageUrl = assetUrl(
+    activeMedia?.url || filteredDestinations[0]?.image_url || destination?.image_url || destinations[0]?.image_url,
+  );
   const fullText = destinationText(selectedDestination);
 
   useEffect(() => {
@@ -166,7 +172,7 @@ export default function LandingPage({ destination, onBack, onNext }) {
 
   const heroStyle = heroImageUrl
     ? {
-        backgroundImage: `linear-gradient(135deg, rgba(21, 83, 60, 0.78), rgba(31, 135, 90, 0.78)), url(${heroImageUrl})`,
+        backgroundImage: `url(${heroImageUrl})`,
       }
     : undefined;
 
@@ -205,27 +211,20 @@ export default function LandingPage({ destination, onBack, onNext }) {
 
   return (
     <div className="phone">
-      <div className="hero landing-explore" style={heroStyle}>
-        <div>
+      <div className="hero landing-explore">
+        <div style={heroStyle}>
           <button className="back-btn hero-back-btn" onClick={handleBack}>
-            <ArrowLeft size={18} /> {selectedDestination ? 'Địa điểm' : activeCategory ? 'Khu vực' : 'Video'}
+            <ArrowLeft size={22} /> {selectedDestination ? 'Danh sách' : activeCategory ? 'Khu vực' : 'Video'}
           </button>
 
-          <div className="badge">
-            <Sparkles size={15} /> Địa điểm nổi bật
-          </div>
-
           <h1>{selectedDestination?.name || activeLabel || 'Chọn khu vực'}</h1>
-          {selectedDestination && (
-            <p className="typewriter-text">{typedText}<span className="typing-cursor" /></p>
+          {!selectedDestination && (
+            <p className="typewriter-text">
+              {activeCategory
+                ? 'Bấm vào một địa điểm để xem giới thiệu.'
+                : 'Chọn khu vực để xem các địa điểm nổi bật.'}
+            </p>
           )}
-          <p className={selectedDestination ? 'typewriter-text is-hidden' : 'typewriter-text'}>
-            {selectedDestination
-              ? 'Phần giới thiệu địa điểm đang chạy bên dưới.'
-              : activeCategory
-                ? 'Bấm vào một địa điểm bên dưới để xem phần giới thiệu.'
-                : 'Chọn một khu vực để xem các địa điểm nổi bật của Núi Bà Đen.'}
-          </p>
         </div>
 
         <div className="hero-actions landing-actions">
@@ -235,7 +234,7 @@ export default function LandingPage({ destination, onBack, onNext }) {
                 const Icon = category.icon;
                 return (
                   <button className="location-card" key={category.key} onClick={() => openCategory(category.key)} type="button">
-                    <span className="location-icon"><Icon size={18} /></span>
+                    <span className={`location-icon zone-${category.key}`}><Icon /></span>
                     <span>
                       <b>{category.label}</b>
                       <small>{category.description}</small>
@@ -278,7 +277,7 @@ export default function LandingPage({ destination, onBack, onNext }) {
                     </span>
                     <span>
                       <b>{item.name}</b>
-                      <small><MapPin size={13} /> {item.location || 'Tây Ninh, Việt Nam'}</small>
+                      <small><MapPin size={16} /> {item.location || 'Tây Ninh, Việt Nam'}</small>
                     </span>
                   </button>
                 );
@@ -295,10 +294,10 @@ export default function LandingPage({ destination, onBack, onNext }) {
                     {selectedMedia.length > 1 && (
                       <div className="gallery-controls">
                         <button type="button" onClick={showPreviousMedia} aria-label="Ảnh trước">
-                          <ChevronLeft size={16} />
+                          <ChevronLeft />
                         </button>
                         <button type="button" onClick={showNextMedia} aria-label="Ảnh tiếp theo">
-                          <ChevronRight size={16} />
+                          <ChevronRight />
                         </button>
                       </div>
                     )}
@@ -371,13 +370,19 @@ export default function LandingPage({ destination, onBack, onNext }) {
               rel="noopener noreferrer"
               aria-label={`Mở chỉ đường đến ${selectedDestination.name} trên Google Maps`}
             >
-              <Navigation size={17} /> Mở Google Maps
+              <Navigation size={20} /> Mở Google Maps
             </a>
           )}
 
           <button className="primary-btn" disabled={!selectedDestination} onClick={() => onNext(selectedDestination)}>
-            <MessageCircle size={17} style={{ verticalAlign: 'middle' }} /> Hỏi AI Guide
+            <img alt="" className="mascot-btn-icon" src="/mascot-160.png" /> Hỏi AI Guide về địa điểm này
           </button>
+
+          {!activeCategory && (
+            <button className="secondary-btn" onClick={onPlan} type="button">
+              <Route size={20} /> Chưa biết đi đâu? Lên lịch trình
+            </button>
+          )}
         </div>
       </div>
 

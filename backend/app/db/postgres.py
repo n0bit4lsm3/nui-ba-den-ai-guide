@@ -769,6 +769,7 @@ def destinations() -> dict[int, dict[str, Any]]:
             "transport": record.get("transport", ""),
             "seo_keyword": record.get("seo_keyword", ""),
             "source_url": record.get("source_url", ""),
+            "display_order": record.get("display_order", ""),
             "google_maps_url": google_maps_url_for_dest(
                 navigation,
                 name,

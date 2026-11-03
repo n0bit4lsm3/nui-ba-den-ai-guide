@@ -1,7 +1,7 @@
-import { Camera, Leaf } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { PUBLIC_APP_URL } from '../api';
+import MascotHello from '../components/MascotHello';
 
 const DEMO_QR_CODE = 'ECO_NUI_BA_DEN_001';
 const DEMO_QR_TARGET_URL = `${PUBLIC_APP_URL}/?qr=${encodeURIComponent(DEMO_QR_CODE)}`;
@@ -12,29 +12,21 @@ export default function QRScanPage() {
       <main className="page qr-start-page">
         <div className="topbar">
           <div>
-            <div className="badge" style={{ color: '#1f875a', background: '#eaf7ef' }}>
-              <Leaf size={15} /> AI Ecotourism
-            </div>
+            <div className="badge">AI Guide Núi Bà Đen</div>
             <h2>Bắt đầu hành trình</h2>
             <p className="small-text">
-              Quét mã QR tại điểm tham quan để mở đúng hướng dẫn viên AI.
+              Mở camera điện thoại, quét mã QR đặt tại điểm tham quan để gặp hướng dẫn viên AI của điểm đó.
             </p>
           </div>
 
-          <div className="icon-pill" aria-hidden="true">
-            <Camera size={22} />
-          </div>
+          <MascotHello size={96} />
         </div>
 
-        <div className="qr-frame qr-entry-visual qr-entry-visual-standalone">
+        <div className="qr-frame">
           <div className="qr-code">
-            <QRCodeSVG
-              level="M"
-              size={160}
-              value={DEMO_QR_TARGET_URL}
-            />
+            <QRCodeSVG level="M" size={180} value={DEMO_QR_TARGET_URL} />
           </div>
-          <span>Đưa camera điện thoại vào mã QR tại điểm tham quan</span>
+          <span>Mã QR mẫu, quét để thử</span>
         </div>
       </main>
     </div>

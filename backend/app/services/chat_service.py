@@ -5,11 +5,12 @@ import logging
 import re
 import unicodedata
 from typing import Any
+from urllib.parse import urlsplit
 
 from app.core.config import DEBUG_RETRIEVAL, OPENAI_MODEL, RAG_TOP_K
 from app.db import postgres
 from app.rag.retriever import retrieve
-from app.services import llm, sunworld_search, web_search
+from app.services import llm, rule_engine, sunworld_search, web_search
 from app.services.query_understanding import understand_query
 
 logger = logging.getLogger(__name__)
@@ -370,6 +371,69 @@ async def contexts_for_question(
     return merged
 
 
+_SOURCE_LABELS = {
+    "sunworld.vn": "Sun World Ba Den Mountain",
+    "khudulichnuibaden.tayninh.gov.vn": "Ban quản lý KDL Núi Bà Đen",
+}
+
+
+def _engine_sources(urls: list[str]) -> list[dict[str, Any]]:
+    sources = []
+    for url in urls or []:
+        host = urlsplit(str(url)).hostname or ""
+        label = next((name for domain, name in _SOURCE_LABELS.items() if host.endswith(domain)), host)
+        sources.append({"title": label or "Nguồn tham khảo", "url": url, "source_type": "database"})
+    return sources[:5]
+
+
+async def rule_engine_reply(
+    question: str,
+    destination_id: int | None,
+    requested_destination_id: int | None,
+    destination: dict[str, Any] | None,
+    session_id: str,
+) -> dict[str, Any] | None:
+    """Answer from the tuned rule engine, or None to fall through to RAG + LLM.
+
+    The engine owns every question it has data for. Its "no information" reply
+    is kept only when no LLM is configured to try a broader answer.
+    """
+    result = await rule_engine.ask(session_id, question, destination)
+    if result is None or (not rule_engine.has_answer(result) and llm.configured()):
+        return None
+
+    intent = str(result.get("intent") or "")
+    metadata = {
+        "top_k": len(result.get("rows") or []),
+        "contexts": [],
+        "used_llm": False,
+        "llm_error": None,
+        "model": "rule-engine",
+        "destination_id": destination_id,
+        "requested_destination_id": requested_destination_id,
+        "destination": destination,
+        "session_id": session_id,
+        "intent": intent,
+        "clarified": intent == "clarify",
+        "media": related_media(destination, [], intent="general") if intent == "destination_detail" else [],
+        "sources": _engine_sources(result.get("sources") or []),
+        "followups": list(result.get("followups") or [])[:4],
+        "trace": {
+            "intent": intent,
+            "rows": result.get("rows") or [],
+            "sheets": result.get("sheets") or [],
+            "filters": result.get("filters") or {},
+            "entities": result.get("entities") or {},
+            "followup": bool(result.get("followup")),
+        },
+    }
+    return {
+        "answer": str(result.get("text") or ""),
+        "retrieval": public_retrieval(metadata),
+        "metadata": metadata,
+    }
+
+
 def public_retrieval(metadata: dict[str, Any]) -> dict[str, Any]:
     public = {
         "top_k": metadata.get("top_k", 0),
@@ -383,11 +447,13 @@ def public_retrieval(metadata: dict[str, Any]) -> dict[str, Any]:
         "clarified": bool(metadata.get("clarified")),
         "media": metadata.get("media") or [],
         "sources": metadata.get("sources") or [],
+        "followups": metadata.get("followups") or [],
     }
 
     if DEBUG_RETRIEVAL:
         public["contexts"] = metadata.get("contexts") or []
         public["llm_error"] = metadata.get("llm_error")
+        public["trace"] = metadata.get("trace")
 
     return public
 
@@ -401,6 +467,12 @@ async def answer(
     requested_destination_id = destination_id
     destination_id, destination = resolve_destination(question, destination_id, history)
     destination_name = destination.get("name") if destination else None
+
+    engine_reply = await rule_engine_reply(
+        question, destination_id, requested_destination_id, destination, session_id
+    )
+    if engine_reply:
+        return engine_reply
 
     query_info = understand_query(question, destination_name)
 

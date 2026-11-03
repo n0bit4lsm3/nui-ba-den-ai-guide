@@ -16,6 +16,7 @@ from app.core.config import (
 )
 from app.core.logging import configure_logging
 from app.db import postgres
+from app.services import rule_engine
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ async def lifespan(app: FastAPI):
     if chroma_task and not chroma_task.done():
         chroma_task.cancel()
 
+    await rule_engine.close()
     await postgres.close()
 
 def create_app() -> FastAPI:

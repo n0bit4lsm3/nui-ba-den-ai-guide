@@ -7,13 +7,11 @@ const INTRO_VIDEO_URL = import.meta.env.VITE_INTRO_VIDEO_URL || 'https://res.clo
 
 export default function VideoPage({ destination, onNext }) {
   const posterUrl = assetUrl(destination?.image_url);
-  const [isVideoRaised, setIsVideoRaised] = useState(true);
   const [needsSoundTap, setNeedsSoundTap] = useState(false);
-  const pageRef = useRef(null);
-  const videoBoxRef = useRef(null);
-  const raisedVideoRef = useRef(null);
+  const videoRef = useRef(null);
 
-  async function playWithSound(video) {
+  async function playWithSound() {
+    const video = videoRef.current;
     if (!video) return;
     video.muted = false;
     video.volume = 1;
@@ -22,6 +20,7 @@ export default function VideoPage({ destination, onNext }) {
       await video.play();
       setNeedsSoundTap(false);
     } catch {
+      // Autoplay with sound is blocked until the visitor taps the page.
       video.muted = true;
       try {
         await video.play();
@@ -32,96 +31,43 @@ export default function VideoPage({ destination, onNext }) {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    pageRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    playWithSound();
   }, [destination?.id]);
-
-  useEffect(() => {
-    if (!isVideoRaised) return undefined;
-
-    requestAnimationFrame(() => {
-      playWithSound(raisedVideoRef.current);
-    });
-
-    return undefined;
-  }, [isVideoRaised]);
-
-  function enableSound() {
-    playWithSound(raisedVideoRef.current);
-  }
-
-  function lowerVideo() {
-    raisedVideoRef.current?.pause();
-    setIsVideoRaised(false);
-    requestAnimationFrame(() => {
-      videoBoxRef.current?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
-    });
-  }
-
-  function raiseVideo() {
-    setIsVideoRaised(true);
-  }
 
   return (
     <div className="phone">
-      <div className="page video-page" ref={pageRef}>
-        {isVideoRaised && (
-          <div className="video-spotlight" onClick={lowerVideo} role="presentation">
-            <div className="video-spotlight-player" onClick={(event) => event.stopPropagation()}>
-              <video
-                ref={raisedVideoRef}
-                className="intro-video"
-                autoPlay
-                controls
-                playsInline
-                poster={posterUrl || undefined}
-                preload="auto"
-                src={INTRO_VIDEO_URL}
-              />
-              {needsSoundTap && (
-                <button className="sound-unlock-btn" onClick={enableSound} type="button">
-                  <Volume2 size={17} /> Bật tiếng
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
+      <div className="page video-page">
         <div className="topbar">
           <div>
-            <div className="badge" style={{ color: '#1f875a', background: '#eaf7ef' }}>
-              Video giới thiệu
-            </div>
-            <h2>Khám phá nhanh núi Bà Đen</h2>
+            <h2>Khám phá nhanh Núi Bà Đen</h2>
+            <p className="small-text">Video dài khoảng 1 phút. Xem xong, bạn chọn địa điểm rồi hỏi AI Guide.</p>
           </div>
         </div>
 
-        <button className="video-box intro-video-box intro-video-strip" onClick={raiseVideo} ref={videoBoxRef} type="button">
+        <div className="video-box">
           <video
+            ref={videoRef}
             className="intro-video"
-            muted
+            autoPlay
+            controls
             playsInline
             poster={posterUrl || undefined}
-            preload="metadata"
+            preload="auto"
             src={INTRO_VIDEO_URL}
           />
-        </button>
-
-        <div className="card">
-          <b>AI Guide</b>
-          <p>
-            Xem video tổng quan trước, sau đó chọn các địa điểm nổi bật và hỏi AI
-            Guide để được gợi ý chi tiết.
-          </p>
+          {needsSoundTap && (
+            <button className="sound-unlock-btn" onClick={playWithSound} type="button">
+              <Volume2 size={20} /> Bật tiếng
+            </button>
+          )}
         </div>
 
-
         <button className="primary-btn" onClick={onNext}>
-          Tôi đã xem xong
+          Chọn địa điểm
         </button>
 
-
         <button className="secondary-btn" onClick={onNext}>
-          <SkipForward size={16} style={{ verticalAlign: 'middle' }} /> Bỏ qua video
+          <SkipForward size={18} /> Bỏ qua video
         </button>
       </div>
     </div>

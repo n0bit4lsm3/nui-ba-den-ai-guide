@@ -90,6 +90,11 @@ OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", "0.55"))
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
+# Tuned rule engine (app/engine/engine.js) answers first; the LLM/RAG pipeline
+# only handles questions the engine has no data for.
+RULE_ENGINE_ENABLED = _bool("RULE_ENGINE_ENABLED", True)
+NODE_BIN = os.getenv("NODE_BIN", "node").strip() or "node"
+
 APP_ENV = os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "production")).strip().lower()
 DEBUG_RETRIEVAL = _bool("DEBUG_RETRIEVAL", APP_ENV not in {"production", "prod"})
 
