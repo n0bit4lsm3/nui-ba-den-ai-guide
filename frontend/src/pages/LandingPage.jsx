@@ -362,22 +362,23 @@ export default function LandingPage({ destination, onBack, onNext, onPlan }) {
             </div>
           )}
 
-          {selectedDestination?.google_maps_url && (
-            <a
-              className="maps-link"
-              href={selectedDestination.google_maps_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Mở chỉ đường đến ${selectedDestination.name} trên Google Maps`}
-            >
-              <Navigation size={20} /> Mở Google Maps
-            </a>
-          )}
-
           {selectedDestination && (
-            <button className="primary-btn" onClick={() => onNext(selectedDestination)}>
-              <img alt="" className="mascot-btn-icon" src="/mascot-160.png" /> Hỏi AI Guide về địa điểm này
-            </button>
+            <div className="detail-actions">
+              <button className="primary-btn" onClick={() => onNext(selectedDestination)}>
+                <img alt="" className="mascot-btn-icon" src="/mascot-160.png" /> Hỏi AI Guide về địa điểm này
+              </button>
+              {selectedDestination.google_maps_url && (
+                <a
+                  className="maps-link"
+                  href={selectedDestination.google_maps_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Mở chỉ đường đến ${selectedDestination.name} trên Google Maps`}
+                >
+                  <Navigation size={20} /> Mở Google Maps
+                </a>
+              )}
+            </div>
           )}
 
           {!activeCategory && (

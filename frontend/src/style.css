@@ -727,6 +727,12 @@ body {
   display: none;
 }
 
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .hero-actions {
   display: flex;
   flex-direction: column;
@@ -2150,6 +2156,13 @@ body {
   .hero-actions .secondary-btn {
     justify-self: start;
     align-self: flex-start;
+  }
+
+  /* Chi tiết địa điểm: nút hỏi và nút bản đồ nằm cùng một hàng */
+  .detail-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
   }
 
   /* Lịch trình: lựa chọn bên trái, kết quả bên phải */
