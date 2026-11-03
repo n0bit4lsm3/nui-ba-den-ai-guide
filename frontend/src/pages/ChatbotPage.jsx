@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Bot, PhoneCall, Send, X } from 'lucide-react';
+import { ArrowLeft, Bot, MoreHorizontal, PhoneCall, Send, X } from 'lucide-react';
 
 import { API_URL, assetUrl } from '../api';
 
@@ -316,7 +316,10 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
   const [streamingText, setStreamingText] = useState('');
   const [visibleStreamingText, setVisibleStreamingText] = useState('');
   const [supportOpen, setSupportOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDoneOpen, setConfirmDoneOpen] = useState(false);
   const [support, setSupport] = useState(FALLBACK_SUPPORT);
+  const menuRef = useRef(null);
   const chatBoxRef = useRef(null);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
@@ -346,6 +349,31 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [supportOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const closeMenu = (event) => {
+      if (!menuRef.current?.contains(event.target)) setMenuOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', closeMenu);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeMenu);
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!confirmDoneOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setConfirmDoneOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [confirmDoneOpen]);
 
   useEffect(() => {
     if (!loading && prevLoadingRef.current) {
@@ -567,9 +595,36 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
   return (
     <div className="phone">
       <div className="page chatbot-page">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> Địa điểm
-        </button>
+        <div className="chatbot-nav-row">
+          <button className="back-btn" onClick={onBack}>
+            <ArrowLeft size={18} /> Địa điểm
+          </button>
+          <div className="chatbot-menu-wrap" ref={menuRef}>
+            <button
+              aria-controls="chatbot-actions"
+              aria-expanded={menuOpen}
+              aria-label="Tùy chọn trải nghiệm"
+              className="chatbot-menu-trigger"
+              onClick={() => setMenuOpen((open) => !open)}
+              type="button"
+            >
+              <MoreHorizontal aria-hidden="true" size={22} />
+            </button>
+            {menuOpen && (
+              <div className="chatbot-actions" id="chatbot-actions">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setConfirmDoneOpen(true);
+                  }}
+                  type="button"
+                >
+                  Hoàn tất trải nghiệm
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="topbar">
           <div>
@@ -632,9 +687,29 @@ export default function ChatbotPage({ destination, onBack, onDone }) {
           </button>
         </form>
 
-        <button className="primary-btn finish-experience-btn" onClick={onDone}>
-          Hoàn tất trải nghiệm
-        </button>
+        {confirmDoneOpen && (
+          <div className="finish-overlay" onClick={() => setConfirmDoneOpen(false)} role="presentation">
+            <section
+              aria-describedby="finish-description"
+              aria-labelledby="finish-title"
+              aria-modal="true"
+              className="finish-dialog"
+              onClick={(event) => event.stopPropagation()}
+              role="dialog"
+            >
+              <h3 id="finish-title">Hoàn tất trải nghiệm?</h3>
+              <p id="finish-description">Bạn muốn kết thúc phần khám phá tại địa điểm này?</p>
+              <div className="finish-dialog-actions">
+                <button autoFocus onClick={() => setConfirmDoneOpen(false)} type="button">
+                  Tiếp tục khám phá
+                </button>
+                <button className="finish-confirm-btn" onClick={onDone} type="button">
+                  Hoàn tất
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
 
         {supportOpen && (
           <div className="support-overlay" onClick={() => setSupportOpen(false)} role="presentation">

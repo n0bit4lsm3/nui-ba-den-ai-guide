@@ -1114,11 +1114,75 @@ p {
 }
 
 .chatbot-page .back-btn,
+.chatbot-page .chatbot-nav-row,
 .chatbot-page .topbar,
 .chatbot-page .quick-questions,
-.chatbot-page .chat-input,
-.chatbot-page .primary-btn {
+.chatbot-page .chat-input {
   flex: 0 0 auto;
+}
+
+.chatbot-nav-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.chatbot-menu-wrap {
+  position: relative;
+  z-index: 10;
+}
+
+.chatbot-menu-trigger {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dcebe3;
+  border-radius: 13px;
+  background: #fff;
+  color: #315a49;
+  cursor: pointer;
+}
+
+.chatbot-menu-trigger:hover,
+.chatbot-menu-trigger[aria-expanded='true'] {
+  background: #eef8f2;
+}
+
+.chatbot-menu-trigger:focus-visible,
+.chatbot-actions button:focus-visible {
+  outline: 3px solid rgba(31, 135, 90, 0.24);
+  outline-offset: 2px;
+}
+
+.chatbot-actions {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  min-width: 205px;
+  padding: 5px;
+  border: 1px solid #dcebe3;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(18, 62, 42, 0.16);
+}
+
+.chatbot-actions button {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #315a49;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.chatbot-actions button:hover {
+  background: #eef8f2;
 }
 
 .chatbot-page .topbar {
@@ -1128,7 +1192,7 @@ p {
 
 .chatbot-page .back-btn {
   align-self: flex-start;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .chatbot-page .topbar h2 {
@@ -1507,8 +1571,68 @@ p {
   opacity: 0.58;
 }
 
-.finish-experience-btn {
-  margin-top: 30px;
+.finish-overlay {
+  position: absolute;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 31, 24, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.finish-dialog {
+  width: 100%;
+  max-width: 340px;
+  padding: 22px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(8, 41, 29, 0.26);
+}
+
+.finish-dialog h3 {
+  margin: 0 0 8px;
+  color: #173b2f;
+  font-size: 20px;
+}
+
+.finish-dialog p {
+  margin: 0;
+  color: #557165;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.finish-dialog-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.finish-dialog-actions button {
+  flex: 1;
+  min-height: 44px;
+  padding: 9px;
+  border: 1px solid #d5e7dc;
+  border-radius: 12px;
+  background: #fff;
+  color: #315a49;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.finish-dialog-actions .finish-confirm-btn {
+  border-color: #1f875a;
+  background: #1f875a;
+  color: #fff;
+}
+
+.finish-dialog-actions button:focus-visible {
+  outline: 3px solid rgba(31, 135, 90, 0.24);
+  outline-offset: 2px;
 }
 
 .support-trigger {
