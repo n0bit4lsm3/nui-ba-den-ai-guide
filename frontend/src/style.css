@@ -21,13 +21,19 @@
   --amber-tint: #fdf0dd;
   --amber-ink: #6b3f00;
 
+  --peach: #ffe9d6;
+  --peach-ink: #9a4a0f;
+  --sky-soft: #ddefff;
+  --lilac: #ece8fb;
+
   --text: 17px;
   --text-sm: 15px;
   --text-xs: 14px;
-  --radius: 16px;
-  --radius-lg: 22px;
+  --radius: 20px;
+  --radius-lg: 28px;
   --tap: 48px;
-  --shadow: 0 10px 30px rgba(21, 34, 28, 0.12);
+  --shadow: 0 12px 32px rgba(31, 135, 90, 0.14);
+  --font-display: "Baloo 2", "Be Vietnam Pro", system-ui, sans-serif;
 }
 
 * {
@@ -74,9 +80,10 @@ h2,
 h3,
 h4 {
   margin: 0;
-  line-height: 1.25;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 h1 {
@@ -111,27 +118,37 @@ a {
 
 /* ---------- Khung ứng dụng ---------- */
 
+body {
+  background-image: linear-gradient(180deg, #d8ecf8 0, #eaf4ee 42%, var(--mist) 100%);
+}
+
 .app-shell {
   min-height: 100dvh;
   display: flex;
   justify-content: center;
+  position: relative;
+  z-index: 0;
+}
+
+.app-sidebar {
+  display: none;
 }
 
 .phone {
   width: 100%;
   min-height: 100dvh;
   display: flex;
-  background: linear-gradient(180deg, #dcedf5 0, #eef5f1 45%, var(--mist) 100%);
   position: relative;
+  z-index: 1;
   overflow: hidden;
 }
 
 /* Mây trôi: hai lớp mây vẽ bằng radial-gradient, lặp theo chiều ngang và
  * dịch đúng một ô nền mỗi vòng nên không thấy chỗ nối. Nằm dưới nội dung. */
-.phone::before,
-.phone::after {
+.app-shell::before,
+.app-shell::after {
   content: "";
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   pointer-events: none;
@@ -139,7 +156,7 @@ a {
   background-repeat: repeat-x;
 }
 
-.phone::before {
+.app-shell::before {
   top: 0;
   height: 320px;
   background-image:
@@ -153,7 +170,7 @@ a {
   animation: drift 38s linear infinite, float 9s ease-in-out infinite;
 }
 
-.phone::after {
+.app-shell::after {
   top: 36%;
   height: 260px;
   background-image:
@@ -272,14 +289,15 @@ a {
 
 .primary-btn {
   border: 0;
-  background: linear-gradient(135deg, #26a26c, var(--green) 60%, var(--green-deep));
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2bb075, var(--green) 65%);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(31, 135, 90, 0.28);
+  box-shadow: 0 5px 0 var(--green-deep), 0 12px 22px rgba(31, 135, 90, 0.25);
 }
 
 .primary-btn:active {
-  background: var(--green-deep);
-  transform: scale(0.99);
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--green-deep), 0 4px 10px rgba(31, 135, 90, 0.2);
 }
 
 .primary-btn:disabled {
@@ -291,14 +309,17 @@ a {
 
 .secondary-btn,
 .maps-link {
-  border: 2px solid var(--line-strong);
+  border: 2px solid var(--line);
+  border-radius: 999px;
   background: var(--paper);
-  color: var(--ink);
+  color: var(--green-deep);
+  box-shadow: 0 4px 0 var(--line);
 }
 
 .secondary-btn:active,
 .maps-link:active {
-  background: var(--mist);
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--line);
 }
 
 .back-btn {
@@ -324,12 +345,13 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
-  background: var(--green-tint);
-  color: var(--green-deep);
-  font-size: var(--text-xs);
-  font-weight: 600;
+  background: var(--peach);
+  color: var(--peach-ink);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
 }
 
 .icon-pill {
@@ -400,12 +422,13 @@ a {
   position: absolute;
   right: calc(100% - 6px);
   top: -4px;
-  padding: 6px 12px;
-  border-radius: 14px 14px 4px 14px;
-  background: var(--green);
-  color: #fff;
-  font-size: var(--text-sm);
-  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 18px 18px 4px 18px;
+  background: var(--peach);
+  color: var(--peach-ink);
+  font-family: var(--font-display);
+  font-size: var(--text);
+  font-weight: 700;
   white-space: nowrap;
   transform-origin: bottom right;
   animation: pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.3) 500ms both, bob 2.4s ease-in-out 500ms infinite;
@@ -428,16 +451,20 @@ a {
   justify-content: flex-start;
 }
 
+/* Mã QR trong một "tấm vé" bo tròn, viền chấm như vé xé. */
 .qr-frame {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   padding: 28px 20px;
-  border: 2px dashed var(--line-strong);
-  border-radius: var(--radius-lg);
+  border: 3px dashed #bfe0cc;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.7);
   text-align: center;
   color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-weight: 700;
 }
 
 .qr-code {
@@ -562,22 +589,29 @@ a {
   align-items: center;
   gap: 14px;
   padding: 14px;
-  border: 2px solid var(--line);
-  border-radius: var(--radius);
+  border: 2px solid #fff;
+  border-radius: 24px;
   background: var(--paper);
+  box-shadow: 0 4px 0 var(--green-tint), 0 10px 24px rgba(31, 135, 90, 0.08);
   text-align: left;
   cursor: pointer;
-  transition: border-color 120ms ease, background-color 120ms ease;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.location-card:hover,
+.area-destination-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--green-tint), 0 14px 28px rgba(31, 135, 90, 0.12);
 }
 
 .location-card {
-  grid-template-columns: var(--tap) 1fr auto;
+  grid-template-columns: 56px 1fr auto;
 }
 
 .location-card:active,
 .area-destination-card:active {
-  border-color: var(--green);
-  background: var(--green-tint);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--green-tint);
 }
 
 .location-card b,
@@ -595,20 +629,23 @@ a {
 }
 
 .location-card em {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--peach);
   font-style: normal;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--green-deep);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--peach-ink);
   white-space: nowrap;
 }
 
 .location-icon {
-  width: var(--tap);
-  height: var(--tap);
+  width: 56px;
+  height: 56px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: 20px;
   background: var(--green-tint);
   color: var(--green-deep);
 }
@@ -672,9 +709,10 @@ a {
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  border: 2px solid var(--line);
+  border: 2px solid #fff;
   border-radius: var(--radius-lg);
   background: var(--paper);
+  box-shadow: 0 4px 0 var(--green-tint), 0 12px 28px rgba(31, 135, 90, 0.1);
 }
 
 .glass-card > b {
@@ -883,8 +921,9 @@ a {
 .quick-questions button {
   min-height: 56px;
   padding: 10px 12px;
-  border: 2px solid var(--line);
-  border-radius: 14px;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 0 var(--green-tint);
+  border-radius: 20px;
   background: linear-gradient(180deg, var(--paper), var(--green-tint));
   color: var(--green-deep);
   font-size: var(--text-sm);
@@ -919,7 +958,7 @@ a {
   position: relative;
   max-width: 88%;
   padding: 12px 16px;
-  border-radius: 18px;
+  border-radius: 22px;
   font-size: var(--text);
   line-height: 1.5;
   animation: rise 220ms ease-out;
@@ -929,7 +968,8 @@ a {
   align-self: flex-start;
   border-bottom-left-radius: 6px;
   background: var(--paper);
-  border: 1px solid var(--line);
+  border: 2px solid var(--green-tint);
+  box-shadow: 0 4px 0 var(--green-tint);
 }
 
 /* Avatar: nhân vật hướng dẫn viên trong video giới thiệu, đứng cạnh mỗi câu trả lời. */
@@ -1211,9 +1251,9 @@ a {
 .chat-input input {
   width: 100%;
   min-height: 56px;
-  padding: 12px 16px;
+  padding: 12px 20px;
   border: 2px solid var(--line-strong);
-  border-radius: var(--radius);
+  border-radius: 999px;
   background: var(--paper);
   font-size: var(--text);
 }
@@ -1236,11 +1276,12 @@ a {
   gap: 6px;
   padding: 0 18px;
   border: 0;
-  border-radius: var(--radius);
+  border-radius: 999px;
   background: var(--green);
   color: #fff;
   font-size: var(--text);
   font-weight: 600;
+  box-shadow: 0 4px 0 var(--green-deep);
   cursor: pointer;
 }
 
@@ -1278,7 +1319,7 @@ a {
   gap: 10px;
   padding: 10px 12px;
   border: 2px solid var(--line);
-  border-radius: 14px;
+  border-radius: 20px;
   background: var(--paper);
   color: var(--green-deep);
   text-align: left;
@@ -1321,9 +1362,10 @@ a {
   flex-direction: column;
   gap: 14px;
   padding: 18px 16px;
-  border: 2px solid var(--green);
+  border: 2px solid #fff;
   border-radius: var(--radius-lg);
   background: var(--paper);
+  box-shadow: 0 5px 0 var(--green-tint), 0 14px 30px rgba(31, 135, 90, 0.12);
   animation: rise 220ms ease-out;
 }
 
@@ -1432,7 +1474,7 @@ a {
   min-height: 56px;
   padding: 10px 14px;
   border: 2px solid var(--line);
-  border-radius: 14px;
+  border-radius: 20px;
   background: var(--paper);
   text-align: left;
   cursor: pointer;
@@ -1674,8 +1716,8 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .phone::before,
-  .phone::after,
+  .app-shell::before,
+  .app-shell::after,
   .chat-bg::before {
     animation: none;
   }
@@ -1696,7 +1738,7 @@ a {
     --text: 18px;
     --text-sm: 16px;
     --text-xs: 15px;
-    --content: 1040px;
+    --content: 880px;
     --gutter: max(32px, calc((100% - var(--content)) / 2));
   }
 
@@ -1949,5 +1991,172 @@ a {
 
   .thankyou-page .small-text {
     max-width: 480px;
+  }
+}
+
+/* ---------- Laptop: bảng bên với nhân vật + 4 bước, nội dung trong tấm thẻ bo tròn ---------- */
+
+@media (min-width: 1024px) {
+  .app-shell {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 28px;
+    width: min(1280px, 100%);
+    margin: 0 auto;
+    padding: 28px;
+    align-items: start;
+  }
+
+  .app-sidebar {
+    position: sticky;
+    top: 28px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 28px 22px 22px;
+    border: 2px solid #fff;
+    border-radius: 36px;
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+  }
+
+  .app-sidebar-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .app-sidebar-hero .mascot-hello {
+    margin: 8px 0 10px;
+  }
+
+  .app-sidebar-hero b {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+  .app-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .app-steps button {
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .app-steps button:disabled {
+    color: var(--ink-soft);
+    cursor: not-allowed;
+  }
+
+  .app-step-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--mist);
+    color: var(--ink-soft);
+  }
+
+  .app-steps .is-done .app-step-icon {
+    background: var(--green-tint);
+    color: var(--green-deep);
+  }
+
+  .app-steps .is-active button {
+    border-color: #fff;
+    background: var(--peach);
+    color: var(--peach-ink);
+    box-shadow: 0 3px 0 #f4d3b5;
+  }
+
+  .app-steps .is-active .app-step-icon {
+    background: #fff;
+    color: var(--peach-ink);
+  }
+
+  .app-hotline {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 22px;
+    background: var(--sky-soft);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .app-hotline svg {
+    justify-self: center;
+    color: var(--sky);
+  }
+
+  .app-hotline small {
+    display: block;
+  }
+
+  .app-hotline b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--sky);
+  }
+
+  .phone {
+    min-height: calc(100dvh - 56px);
+    border: 2px solid #fff;
+    border-radius: 36px;
+    background: var(--paper);
+    box-shadow: var(--shadow);
+  }
+
+  /* Tấm thẻ cao theo nội dung; chỉ màn chat và chọn địa điểm cần cao hết màn. */
+  .phone {
+    min-height: 0;
+  }
+
+  .phone:has(.chatbot-page),
+  .phone:has(.hero) {
+    min-height: calc(100dvh - 56px);
+  }
+
+  .qr-start-page,
+  .video-page,
+  .thankyou-page {
+    min-height: 0;
+    padding-block: 48px;
+  }
+
+  .qr-start-page .mascot-hello,
+  .video-page .mascot-hello {
+    display: none;
+  }
+
+  .qr-start-page .topbar {
+    grid-template-columns: 1fr;
   }
 }

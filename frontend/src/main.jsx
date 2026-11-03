@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './style.css';
+import AppFrame from './components/AppFrame';
 import ChatbotPage from './pages/ChatbotPage';
 import ItineraryPage from './pages/ItineraryPage';
 import LandingPage from './pages/LandingPage';
@@ -97,7 +98,7 @@ function App() {
   }, []);
 
   return (
-    <div className="app-shell">
+    <AppFrame destination={destination} onGo={(next) => go(next === 'qr' ? 'qr' : next, next === 'qr' ? null : destination)} step={step}>
       {step === 'qr' && <QRScanPage onSuccess={(data) => go('video', data)} />}
 
       {step === 'video' && (
@@ -139,7 +140,7 @@ function App() {
       )}
 
       {step === 'thankyou' && <ThankYouPage onRestart={() => go('qr', null)} />}
-    </div>
+    </AppFrame>
   );
 }
 
