@@ -975,6 +975,88 @@ body {
   padding: 0 4px;
 }
 
+/* ---------- Ba thẻ khu vực: nổi lên đè mép ảnh, có dải màu riêng ---------- */
+
+.hero.is-zones > div:first-child {
+  padding-bottom: 84px;
+}
+
+.hero.is-zones .location-grid {
+  position: relative;
+  z-index: 2;
+  margin-top: -64px;
+}
+
+.hero.is-zones .location-card {
+  grid-template-columns: 64px 1fr;
+  grid-template-rows: auto auto auto;
+  align-items: start;
+  padding: 20px 18px 18px;
+  border-top: 6px solid var(--green);
+  border-radius: 26px;
+  box-shadow: 0 6px 0 var(--green-tint), 0 18px 40px rgba(31, 135, 90, 0.18);
+  animation: card-in 520ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.hero.is-zones .location-card:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.hero.is-zones .location-card:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+.hero.is-zones .location-card .location-icon {
+  grid-row: 1 / span 2;
+  width: 64px;
+  height: 64px;
+  border-radius: 22px;
+}
+
+.hero.is-zones .location-card .location-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.hero.is-zones .location-card b {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.hero.is-zones .location-card em {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 6px;
+  padding: 8px 16px;
+  font-size: var(--text-sm);
+  background: var(--green);
+  color: #fff;
+}
+
+.hero.is-zones .location-card.zone-summit {
+  border-top-color: var(--sky);
+}
+
+.hero.is-zones .location-card.zone-summit em {
+  background: var(--sky);
+}
+
+.hero.is-zones .location-card.zone-slope {
+  border-top-color: var(--amber);
+}
+
+.hero.is-zones .location-card.zone-slope em {
+  background: var(--amber);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+  }
+}
+
 /* ---------- Chatbot ---------- */
 
 .page.chatbot-page {
@@ -1994,19 +2076,41 @@ body {
   .location-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 20px;
   }
 
-  .location-card {
-    grid-template-columns: var(--tap) 1fr;
-    grid-template-rows: auto auto;
-    align-content: start;
-    padding: 20px;
+  .hero.is-zones > div:first-child {
+    padding-bottom: 110px;
   }
 
-  .location-card em {
-    grid-column: 2;
+  .hero.is-zones .location-grid {
+    margin-top: -84px;
   }
+
+  .hero.is-zones .location-card {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    padding: 26px 20px 22px;
+  }
+
+  .hero.is-zones .location-card .location-icon {
+    grid-row: auto;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 8px;
+  }
+
+  .hero.is-zones .location-card .location-icon svg {
+    width: 38px;
+    height: 38px;
+  }
+
+  .hero.is-zones .location-card em {
+    grid-column: auto;
+    justify-self: center;
+  }
+
 
   .area-destination-list {
     display: grid;

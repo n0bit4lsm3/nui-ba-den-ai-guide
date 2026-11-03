@@ -211,7 +211,7 @@ export default function LandingPage({ destination, onBack, onNext, onPlan }) {
 
   return (
     <div className="phone">
-      <div className="hero landing-explore">
+      <div className={activeCategory ? 'hero landing-explore' : 'hero landing-explore is-zones'}>
         <div style={heroStyle}>
           <button className="back-btn hero-back-btn" onClick={handleBack}>
             <ArrowLeft size={22} /> {selectedDestination ? 'Danh sách' : activeCategory ? 'Khu vực' : 'Video'}
@@ -233,13 +233,13 @@ export default function LandingPage({ destination, onBack, onNext, onPlan }) {
               {LOCATION_CATEGORIES.map((category) => {
                 const Icon = category.icon;
                 return (
-                  <button className="location-card" key={category.key} onClick={() => openCategory(category.key)} type="button">
+                  <button className={`location-card zone-${category.key}`} key={category.key} onClick={() => openCategory(category.key)} type="button">
                     <span className={`location-icon zone-${category.key}`}><Icon /></span>
                     <span>
                       <b>{category.label}</b>
                       <small>{category.description}</small>
                     </span>
-                    <em>{categoryCounts[category.key]} điểm</em>
+                    <em>Xem {categoryCounts[category.key]} điểm</em>
                   </button>
                 );
               })}
