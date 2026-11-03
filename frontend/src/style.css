@@ -121,8 +121,71 @@ a {
   width: 100%;
   min-height: 100dvh;
   display: flex;
-  background: var(--paper);
+  background: linear-gradient(180deg, #dcedf5 0, #eef5f1 45%, var(--mist) 100%);
   position: relative;
+  overflow: hidden;
+}
+
+/* Mây trôi: hai lớp mây vẽ bằng radial-gradient, lặp theo chiều ngang và
+ * dịch đúng một ô nền mỗi vòng nên không thấy chỗ nối. Nằm dưới nội dung. */
+.phone::before,
+.phone::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-repeat: repeat-x;
+}
+
+.phone::before {
+  top: 0;
+  height: 320px;
+  background-image:
+    radial-gradient(ellipse 150px 54px at 160px 120px, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(ellipse 90px 40px at 250px 95px, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(ellipse 170px 50px at 560px 210px, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(ellipse 100px 44px at 640px 180px, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 72%);
+  background-size: 820px 320px;
+  opacity: 0.9;
+  animation: drift 110s linear infinite;
+}
+
+.phone::after {
+  top: 36%;
+  height: 260px;
+  background-image:
+    radial-gradient(ellipse 110px 36px at 120px 90px, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(ellipse 130px 40px at 430px 170px, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 72%);
+  background-size: 620px 260px;
+  opacity: 0.7;
+  animation: drift-back 75s linear infinite;
+}
+
+.page,
+.hero {
+  position: relative;
+  z-index: 1;
+  /* Khung demo trên máy tính: ẩn thanh cuộn để không che lớp mây ở mép phải. */
+  scrollbar-width: none;
+}
+
+.page::-webkit-scrollbar,
+.hero::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes drift {
+  to {
+    background-position: 820px 0;
+  }
+}
+
+@keyframes drift-back {
+  to {
+    background-position: -620px 0;
+  }
 }
 
 /* Trên màn lớn hiển thị như một điện thoại để demo. */
@@ -152,6 +215,7 @@ a {
   gap: 20px;
   padding: 20px 20px calc(28px + env(safe-area-inset-bottom));
   overflow-y: auto;
+  background: transparent;
 }
 
 /* ---------- Nút ---------- */
@@ -355,7 +419,7 @@ a {
 /* ---------- Màn hình video ---------- */
 
 .video-page {
-  background: var(--paper);
+  background: transparent;
 }
 
 .video-box {
@@ -686,6 +750,19 @@ a {
 .page.chatbot-page {
   gap: 0;
   padding: 0;
+  background:
+    linear-gradient(180deg, rgba(243, 246, 242, 0.78) 0, rgba(243, 246, 242, 0.84) 100%),
+    url("/bg-nuibaden.jpg") center 30% / cover no-repeat;
+}
+
+.chatbot-page .chatbot-nav-row,
+.chatbot-page .chat-input {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+}
+
+.chatbot-page .msg.bot {
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .chatbot-nav-row {
@@ -1573,6 +1650,11 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .phone::before,
+  .phone::after {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {
