@@ -145,6 +145,16 @@ body {
 
 /* Điện thoại và tablet: nội dung nằm trong tấm thẻ trắng mờ, tranh nền ghé qua các mép. */
 @media (max-width: 1023px) {
+  /* Trang video: nhân vật nhỏ lại, không bong bóng, để tiêu đề không bị che. */
+  .video-page .mascot-hello {
+    --size: 72px;
+    align-self: flex-start;
+  }
+
+  .video-page .mascot-hello-bubble {
+    display: none;
+  }
+
   .app-shell {
     padding: 10px;
   }
