@@ -2047,11 +2047,9 @@ body {
   }
 
   .video-page .primary-btn {
-    justify-self: end;
-  }
-
-  .video-page .secondary-btn {
-    justify-self: start;
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: min(100%, 420px);
   }
 
   .video-page .video-box {
@@ -2324,6 +2322,7 @@ body {
 
   .app-steps button:disabled {
     color: var(--ink-soft);
+    opacity: 0.7;
     cursor: not-allowed;
   }
 
@@ -2356,6 +2355,11 @@ body {
   }
 
   .app-hotline {
+    width: 100%;
+    border: 0;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
     display: grid;
     grid-template-columns: 40px 1fr;
     align-items: center;

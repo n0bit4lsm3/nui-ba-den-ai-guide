@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { SkipForward } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 import { assetUrl } from '../api';
 import MascotHello from '../components/MascotHello';
 
 const INTRO_VIDEO_URL = import.meta.env.VITE_INTRO_VIDEO_URL || 'https://res.cloudinary.com/df6nsfnjk/video/upload/q_auto/f_auto/v1780989537/intro_nui_ba_den_xzcgcs.mp4';
 
-export default function VideoPage({ destination, onNext }) {
+export default function VideoPage({ destination, onNext, onWatched, watched }) {
   const posterUrl = assetUrl(destination?.image_url);
   const videoRef = useRef(null);
 
@@ -41,7 +41,6 @@ export default function VideoPage({ destination, onNext }) {
       <div className="page video-page">
         <div className="topbar">
           <div>
-            <div className="badge">AI Guide Núi Bà Đen</div>
             <h2>Khám phá nhanh Núi Bà Đen</h2>
             <p className="small-text">Video dài khoảng 1 phút. Xem xong, bạn chọn địa điểm rồi hỏi AI Guide.</p>
           </div>
@@ -58,15 +57,13 @@ export default function VideoPage({ destination, onNext }) {
             poster={posterUrl || undefined}
             preload="auto"
             src={INTRO_VIDEO_URL}
+            onEnded={onWatched}
+            onError={onWatched}
           />
         </div>
 
-        <button className="primary-btn" onClick={onNext}>
-          Chọn địa điểm
-        </button>
-
-        <button className="secondary-btn" onClick={onNext}>
-          <SkipForward size={18} /> Bỏ qua video
+        <button className="primary-btn" disabled={!watched} onClick={onNext}>
+          {watched ? 'Chọn địa điểm' : <><Lock size={18} /> Xem hết video để tiếp tục</>}
         </button>
       </div>
     </div>

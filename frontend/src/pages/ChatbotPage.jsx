@@ -1,39 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, MoreHorizontal, PhoneCall, Send, X } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, PhoneCall, Send } from 'lucide-react';
 
 import { API_URL, assetUrl } from '../api';
 import MascotHello from '../components/MascotHello';
+import SupportSheet from '../components/SupportSheet';
 
-const FALLBACK_SUPPORT = {
-  lost_guidance: [
-    'Dừng di chuyển và không tự đi sâu thêm.',
-    'Bật định vị, chia sẻ vị trí và mô tả mốc gần nhất.',
-    'Giữ liên lạc và tiết kiệm pin trong lúc chờ hỗ trợ.',
-  ],
-  contacts: [
-    {
-      kind: 'emergency',
-      name: 'Tổng đài khẩn cấp quốc gia',
-      phone: '112',
-      display_phone: '112',
-      description: 'Cứu nạn khẩn cấp 24/7, miễn phí cuộc gọi.',
-    },
-    {
-      kind: 'management',
-      name: 'Ban quản lý KDL Quốc gia Núi Bà Đen',
-      phone: '02763823378',
-      display_phone: '0276 3823 378',
-      description: 'Hỗ trợ tại khu du lịch và thông tin điểm đến.',
-    },
-    {
-      kind: 'visitor_support',
-      name: 'Sun World Ba Den Mountain',
-      phone: '0327222227',
-      display_phone: '0327 222 227',
-      description: 'Hỗ trợ dịch vụ và vấn đề phát sinh khi tham quan.',
-    },
-  ],
-};
 
 function isSafeUrl(url) {
   return /^(https?:\/\/|mailto:|tel:)/i.test(url);
@@ -320,7 +291,6 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
   const [supportOpen, setSupportOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDoneOpen, setConfirmDoneOpen] = useState(false);
-  const [support, setSupport] = useState(FALLBACK_SUPPORT);
   const menuRef = useRef(null);
   const chatBoxRef = useRef(null);
   const bottomRef = useRef(null);
@@ -336,30 +306,6 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
     onInitialQuestionUsed?.();
     ask(question);
   }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch(`${API_URL}/api/support`, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data?.contacts) && data.contacts.length) setSupport(data);
-      })
-      .catch(() => {});
-
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    if (!supportOpen) return undefined;
-    const closeOnEscape = (event) => {
-      if (event.key === 'Escape') setSupportOpen(false);
-    };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [supportOpen]);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -741,55 +687,7 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
           </div>
         )}
 
-        {supportOpen && (
-          <div className="support-overlay" onClick={() => setSupportOpen(false)} role="presentation">
-            <section
-              aria-labelledby="support-title"
-              aria-modal="true"
-              className="support-sheet"
-              id="support-dialog"
-              onClick={(event) => event.stopPropagation()}
-              role="dialog"
-            >
-              <div className="support-sheet-header">
-                <div>
-                  <small>Hỗ trợ an toàn</small>
-                  <h3 id="support-title">Khi bị lạc trên Núi Bà Đen</h3>
-                </div>
-                <button aria-label="Đóng" onClick={() => setSupportOpen(false)} type="button">
-                  <X size={19} />
-                </button>
-              </div>
-
-              <ol className="lost-guidance">
-                {(support.lost_guidance || FALLBACK_SUPPORT.lost_guidance).map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ol>
-
-              <div className="support-contact-list">
-                {(support.contacts || FALLBACK_SUPPORT.contacts).map((contact) => (
-                  <a
-                    className={`support-contact ${contact.kind === 'emergency' ? 'is-emergency' : ''}`}
-                    href={`tel:${contact.phone}`}
-                    key={`${contact.kind}-${contact.phone}`}
-                  >
-                    <span className="support-phone-icon"><PhoneCall size={18} /></span>
-                    <span>
-                      <b>{contact.name}</b>
-                      <strong>{contact.display_phone || contact.phone}</strong>
-                      <small>{contact.description}</small>
-                    </span>
-                  </a>
-                ))}
-              </div>
-
-              <p className="support-warning">
-                Chỉ gọi 112 khi có nguy hiểm, tai nạn hoặc cần cứu nạn khẩn cấp.
-              </p>
-            </section>
-          </div>
-        )}
+        <SupportSheet onClose={() => setSupportOpen(false)} open={supportOpen} />
       </div>
     </div>
   );

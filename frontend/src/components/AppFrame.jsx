@@ -1,7 +1,9 @@
-import { Check, Clapperboard, MapPin, MessageCircleHeart, PhoneCall } from 'lucide-react';
+import { useState } from 'react';
+import { Check, Clapperboard, Lock, MapPin, MessageCircleHeart, PhoneCall } from 'lucide-react';
 
 import MascotHello from './MascotHello';
 import SkyScene from './SkyScene';
+import SupportSheet from './SupportSheet';
 
 // Desktop shell: a sticky side panel with the guide, the three steps of the
 // journey and the hotline. Hidden on phones, where each page fills the screen.
@@ -12,8 +14,9 @@ const STEPS = [
 ];
 const STEP_ORDER = { video: 1, landing: 2, itinerary: 2, chatbot: 3, thankyou: 4 };
 
-export default function AppFrame({ step, destination, onGo, children }) {
+export default function AppFrame({ step, destination, videoWatched, onGo, children }) {
   const current = STEP_ORDER[step] || 1;
+  const [supportOpen, setSupportOpen] = useState(false);
 
   return (
     <div className="app-shell">
@@ -29,11 +32,20 @@ export default function AppFrame({ step, destination, onGo, children }) {
           {STEPS.map((item) => {
             const Icon = item.icon;
             const state = item.order === current ? 'is-active' : item.order < current ? 'is-done' : '';
-            const disabled = item.key === 'chatbot' && !destination;
+            // Later steps unlock only after the intro video has been watched.
+            const locked = item.key !== 'video' && !videoWatched;
+            const disabled = locked || (item.key === 'chatbot' && !destination);
             return (
               <li className={state} key={item.key}>
-                <button disabled={disabled} onClick={() => onGo(item.key)} type="button">
-                  <span className="app-step-icon">{state === 'is-done' ? <Check size={18} strokeWidth={3} /> : <Icon size={20} />}</span>
+                <button
+                  disabled={disabled}
+                  onClick={() => onGo(item.key)}
+                  title={locked ? 'Xem hết video giới thiệu để mở bước này' : undefined}
+                  type="button"
+                >
+                  <span className="app-step-icon">
+                    {state === 'is-done' ? <Check size={18} strokeWidth={3} /> : locked ? <Lock size={18} /> : <Icon size={20} />}
+                  </span>
                   <span>{item.label}</span>
                 </button>
               </li>
@@ -41,14 +53,16 @@ export default function AppFrame({ step, destination, onGo, children }) {
           })}
         </ol>
 
-        <a className="app-hotline" href="tel:0327222227">
+        <button className="app-hotline" onClick={() => setSupportOpen(true)} type="button">
           <PhoneCall size={20} />
           <span>
-            <small>Cần hỗ trợ? Sun World</small>
-            <b>0327 222 227</b>
+            <small>Khi bị lạc hoặc cần giúp</small>
+            <b>Hotline & hỗ trợ</b>
           </span>
-        </a>
+        </button>
       </aside>
+
+      <SupportSheet onClose={() => setSupportOpen(false)} open={supportOpen} />
 
       {children}
     </div>

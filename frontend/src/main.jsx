@@ -43,6 +43,16 @@ function App() {
   const [destination, setDestination] = useState(null);
   // Question handed to the chatbot by the itinerary planner.
   const [pendingQuestion, setPendingQuestion] = useState(null);
+  // Later steps open only after the intro video has been watched once (kept
+  // for the tab, so a refresh on /landing does not send people back).
+  const [videoWatched, setVideoWatched] = useState(() => {
+    try { return sessionStorage.getItem('nbd.videoWatched') === '1'; } catch { return false; }
+  });
+
+  function markVideoWatched() {
+    setVideoWatched(true);
+    try { sessionStorage.setItem('nbd.videoWatched', '1'); } catch {}
+  }
 
   function go(nextStep, nextDestination = destination, { replace = false } = {}) {
     setStep(nextStep);
@@ -82,7 +92,9 @@ function App() {
         return;
       }
 
-      setDestination(await loadDestination(initial.destId));
+      const dest = await loadDestination(initial.destId);
+      setDestination(dest);
+      if (initial.step !== 'video' && initial.step !== 'thankyou' && !videoWatched) go('video', dest, { replace: true });
     }
 
     async function onPopState() {
@@ -97,11 +109,13 @@ function App() {
   }, []);
 
   return (
-    <AppFrame destination={destination} onGo={(next) => go(next, destination)} step={step}>
+    <AppFrame destination={destination} onGo={(next) => go(next, destination)} step={step} videoWatched={videoWatched}>
       {step === 'video' && (
         <VideoPage
           destination={destination}
           onNext={() => go('landing')}
+          onWatched={markVideoWatched}
+          watched={videoWatched}
         />
       )}
 
