@@ -2066,9 +2066,6 @@ body {
     box-shadow: 0 24px 60px rgba(31, 135, 90, 0.22);
   }
 
-  .intro-video {
-    max-height: 80dvh;
-  }
 
   .video-page .primary-btn,
   .video-page .secondary-btn {
