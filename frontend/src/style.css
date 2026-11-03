@@ -2047,12 +2047,10 @@ body {
   }
 
   .video-page .primary-btn {
-    width: min(100%, 320px);
     justify-self: end;
   }
 
   .video-page .secondary-btn {
-    width: min(100%, 320px);
     justify-self: start;
   }
 
@@ -2070,7 +2068,7 @@ body {
 
   .video-page .primary-btn,
   .video-page .secondary-btn {
-    width: 100%;
+    width: min(100%, 320px);
     min-width: 0;
     margin-top: 0;
   }
