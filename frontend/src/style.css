@@ -1736,43 +1736,49 @@ body {
     align-self: flex-start;
   }
 
-  /* Video: video bên trái, chữ và nút bên phải */
+  /* Video là trọng tâm: tiêu đề trên, video to ở giữa, hai nút nằm ngang bên dưới */
   .video-page {
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr);
-    grid-template-areas:
-      "video head"
-      "video cta"
-      "video skip"
-      "video .";
+    grid-template-columns: repeat(2, minmax(0, 280px));
+    justify-content: center;
     align-content: start;
-    align-items: start;
-    column-gap: 48px;
-    row-gap: 16px;
+    column-gap: 16px;
+    row-gap: 20px;
     min-height: 100dvh;
+    text-align: center;
   }
 
   .video-page .topbar {
-    grid-area: head;
+    grid-column: 1 / -1;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .video-page .topbar h2 {
+    font-size: 36px;
+  }
+
+  .video-page .topbar .small-text {
+    max-width: 520px;
+    margin-inline: auto;
   }
 
   .video-page .video-box {
-    grid-area: video;
-    align-self: center;
+    grid-column: 1 / -1;
+    width: min(100%, 880px);
+    justify-self: center;
+    border-radius: 32px;
+    box-shadow: 0 24px 60px rgba(31, 135, 90, 0.22);
   }
 
   .intro-video {
-    max-height: 80dvh;
+    max-height: 70dvh;
   }
 
-  .video-page .primary-btn {
-    grid-area: cta;
-    width: 100%;
-  }
-
+  .video-page .primary-btn,
   .video-page .secondary-btn {
-    grid-area: skip;
     width: 100%;
+    min-width: 0;
     margin-top: 0;
   }
 
