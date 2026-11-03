@@ -143,6 +143,23 @@ body {
   overflow: hidden;
 }
 
+/* Điện thoại và tablet: nội dung nằm trong tấm thẻ trắng mờ, tranh nền ghé qua các mép. */
+@media (max-width: 1023px) {
+  .app-shell {
+    padding: 10px;
+  }
+
+  .phone {
+    min-height: calc(100dvh - 20px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 16px 40px rgba(31, 135, 90, 0.16);
+  }
+}
+
 /* Mây trôi: hai lớp mây vẽ bằng radial-gradient, lặp theo chiều ngang và
  * dịch đúng một ô nền mỗi vòng nên không thấy chỗ nối. Nằm dưới nội dung. */
 .app-shell::before,
@@ -408,6 +425,33 @@ body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+}
+
+/* Tranh phong cảnh kiểu anime làm nền (public/bg-anime.jpg), lia máy rất chậm,
+ * phủ lớp sương trắng mỏng để các tấm thẻ và chữ phía trên vẫn rõ. */
+.sky-scene::before {
+  content: "";
+  position: absolute;
+  inset: -4%;
+  background: url("/bg-anime.jpg") center 70% / cover no-repeat;
+  animation: kenburns 60s ease-in-out infinite alternate;
+}
+
+.sky-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(240, 247, 243, 0.42) 0, rgba(240, 247, 243, 0.3) 45%, rgba(240, 247, 243, 0.55) 100%);
+}
+
+.sky-sun,
+.sky-hills {
+  display: none;
+}
+
+.sky-birds,
+.sky-leaves {
+  z-index: 1;
 }
 
 .sky-sun {
@@ -1967,6 +2011,7 @@ body {
   .app-shell::before,
   .app-shell::after,
   .chat-bg::before,
+  .sky-scene::before,
   .sky-sun::before,
   .cloud-hat,
   .cable-car,
