@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { SkipForward, Volume2 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { SkipForward } from 'lucide-react';
 
 import { assetUrl } from '../api';
 
@@ -7,31 +7,32 @@ const INTRO_VIDEO_URL = import.meta.env.VITE_INTRO_VIDEO_URL || 'https://res.clo
 
 export default function VideoPage({ destination, onNext }) {
   const posterUrl = assetUrl(destination?.image_url);
-  const [needsSoundTap, setNeedsSoundTap] = useState(false);
   const videoRef = useRef(null);
-
-  async function playWithSound() {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = false;
-    video.volume = 1;
-
-    try {
-      await video.play();
-      setNeedsSoundTap(false);
-    } catch {
-      // Autoplay with sound is blocked until the visitor taps the page.
-      video.muted = true;
-      try {
-        await video.play();
-      } catch {}
-      setNeedsSoundTap(true);
-    }
-  }
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    playWithSound();
+    const video = videoRef.current;
+    if (!video) return undefined;
+
+    // Browsers only allow sound after the visitor has touched the page. Try
+    // with sound first; if blocked, start muted and unmute on the first touch
+    // anywhere, so no separate "bật tiếng" button is needed.
+    const events = ['pointerdown', 'touchstart', 'keydown'];
+    const unmute = () => {
+      video.muted = false;
+      video.volume = 1;
+      video.play().catch(() => {});
+      events.forEach((name) => document.removeEventListener(name, unmute, true));
+    };
+
+    video.muted = false;
+    video.play().catch(() => {
+      video.muted = true;
+      video.play().catch(() => {});
+      events.forEach((name) => document.addEventListener(name, unmute, true));
+    });
+
+    return () => events.forEach((name) => document.removeEventListener(name, unmute, true));
   }, [destination?.id]);
 
   return (
@@ -55,11 +56,6 @@ export default function VideoPage({ destination, onNext }) {
             preload="auto"
             src={INTRO_VIDEO_URL}
           />
-          {needsSoundTap && (
-            <button className="sound-unlock-btn" onClick={playWithSound} type="button">
-              <Volume2 size={20} /> Bật tiếng
-            </button>
-          )}
         </div>
 
         <button className="primary-btn" onClick={onNext}>
