@@ -171,6 +171,7 @@ body {
 }
 
 .app-shell::after {
+  z-index: 0;
   top: 36%;
   height: 260px;
   background-image:
@@ -397,6 +398,195 @@ body {
 
 .spin {
   animation: spin 0.9s linear infinite;
+}
+
+/* ---------- Cảnh nền hoạt hình ---------- */
+
+.sky-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky-sun {
+  position: absolute;
+  top: 2vh;
+  right: -24px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6d6 0 38%, #ffe9a8 60%, rgba(255, 233, 168, 0) 72%);
+  box-shadow: 0 0 50px 16px rgba(255, 226, 150, 0.35);
+}
+
+@media (min-width: 1024px) {
+  .sky-sun {
+    top: 6vh;
+    right: 6vw;
+    width: 130px;
+    height: 130px;
+  }
+}
+
+.sky-sun::before {
+  content: "";
+  position: absolute;
+  inset: -90px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 236, 170, 0.35) 0 6deg, transparent 6deg 30deg,
+    rgba(255, 236, 170, 0.35) 30deg 36deg, transparent 36deg 60deg,
+    rgba(255, 236, 170, 0.35) 60deg 66deg, transparent 66deg 90deg,
+    rgba(255, 236, 170, 0.35) 90deg 96deg, transparent 96deg 120deg,
+    rgba(255, 236, 170, 0.35) 120deg 126deg, transparent 126deg 150deg,
+    rgba(255, 236, 170, 0.35) 150deg 156deg, transparent 156deg 180deg,
+    rgba(255, 236, 170, 0.35) 180deg 186deg, transparent 186deg 210deg,
+    rgba(255, 236, 170, 0.35) 210deg 216deg, transparent 216deg 240deg,
+    rgba(255, 236, 170, 0.35) 240deg 246deg, transparent 246deg 270deg,
+    rgba(255, 236, 170, 0.35) 270deg 276deg, transparent 276deg 300deg,
+    rgba(255, 236, 170, 0.35) 300deg 306deg, transparent 306deg 330deg,
+    rgba(255, 236, 170, 0.35) 330deg 336deg, transparent 336deg 360deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 36%, #000 40%, #000 70%, transparent 72%);
+  mask: radial-gradient(circle, transparent 36%, #000 40%, #000 70%, transparent 72%);
+  animation: spin 70s linear infinite;
+}
+
+.sky-hills {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 30vh;
+  min-height: 180px;
+}
+
+.hill-back {
+  fill: #cfe4d8;
+}
+
+.hill-cone {
+  fill: #aacdb9;
+}
+
+.hill-mid {
+  fill: #b6d6c4;
+}
+
+.hill-front {
+  fill: #9fc6ad;
+}
+
+.cloud-hat ellipse {
+  fill: #fff;
+  opacity: 0.95;
+}
+
+.cloud-hat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: float 6s ease-in-out infinite;
+}
+
+.cable-line {
+  stroke: #6f8f7d;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.cable-car line {
+  stroke: #4f6d5c;
+  stroke-width: 2;
+}
+
+.cable-car rect {
+  fill: #e88a2d;
+  stroke: #b8651a;
+  stroke-width: 1.5;
+}
+
+/* Cabin chạy theo đúng đường cáp (từ ga 470,296 lên đỉnh 716,128) rồi quay về. */
+.cable-car {
+  animation: cable-ride 42s ease-in-out infinite alternate;
+}
+
+@keyframes cable-ride {
+  from {
+    transform: translate(470px, 296px);
+  }
+
+  to {
+    transform: translate(716px, 128px);
+  }
+}
+
+.sky-birds {
+  position: absolute;
+  top: 14vh;
+  left: -140px;
+  width: 120px;
+  height: 40px;
+  opacity: 0.8;
+  animation: fly 38s linear 4s infinite;
+}
+
+@keyframes fly {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(calc(50vw + 70px), -24px);
+  }
+
+  100% {
+    transform: translate(calc(100vw + 280px), 10px);
+  }
+}
+
+.sky-leaves span {
+  position: absolute;
+  top: -40px;
+  width: 14px;
+  height: 22px;
+  border-radius: 0 60% 0 60%;
+  background: linear-gradient(135deg, #7cc48f, #3f9a5c);
+  opacity: 0.55;
+  animation: leaf-fall 16s linear infinite;
+}
+
+.sky-leaves span:nth-child(1) { left: 12%; animation-delay: 0s; }
+.sky-leaves span:nth-child(2) { left: 32%; animation-delay: 5s; animation-duration: 19s; }
+.sky-leaves span:nth-child(3) { left: 55%; animation-delay: 9s; background: linear-gradient(135deg, #f5c268, #e08a2b); }
+.sky-leaves span:nth-child(4) { left: 74%; animation-delay: 2.5s; animation-duration: 21s; }
+.sky-leaves span:nth-child(5) { left: 90%; animation-delay: 12s; background: linear-gradient(135deg, #f5c268, #e08a2b); }
+
+@keyframes leaf-fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 0.75;
+  }
+
+  50% {
+    transform: translate(-40px, 50vh) rotate(200deg);
+  }
+
+  92% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translate(30px, 104vh) rotate(420deg);
+    opacity: 0;
+  }
 }
 
 /* ---------- Nhân vật chào ---------- */
@@ -1688,7 +1878,12 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .app-shell::before,
   .app-shell::after,
-  .chat-bg::before {
+  .chat-bg::before,
+  .sky-sun::before,
+  .cloud-hat,
+  .cable-car,
+  .sky-birds,
+  .sky-leaves span {
     animation: none;
   }
 

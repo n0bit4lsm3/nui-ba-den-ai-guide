@@ -1,6 +1,7 @@
 import { Check, Clapperboard, MapPin, MessageCircleHeart, PhoneCall } from 'lucide-react';
 
 import MascotHello from './MascotHello';
+import SkyScene from './SkyScene';
 
 // Desktop shell: a sticky side panel with the guide, the three steps of the
 // journey and the hotline. Hidden on phones, where each page fills the screen.
@@ -16,6 +17,7 @@ export default function AppFrame({ step, destination, onGo, children }) {
 
   return (
     <div className="app-shell">
+      <SkyScene />
       <aside className="app-sidebar" aria-label="Hành trình">
         <div className="app-sidebar-hero">
           <MascotHello size={120} text={step === 'thankyou' ? 'Hẹn gặp lại!' : 'Xin chào!'} />
