@@ -374,9 +374,11 @@ export default function LandingPage({ destination, onBack, onNext, onPlan }) {
             </a>
           )}
 
-          <button className="primary-btn" disabled={!selectedDestination} onClick={() => onNext(selectedDestination)}>
-            <img alt="" className="mascot-btn-icon" src="/mascot-160.png" /> Hỏi AI Guide về địa điểm này
-          </button>
+          {selectedDestination && (
+            <button className="primary-btn" onClick={() => onNext(selectedDestination)}>
+              <img alt="" className="mascot-btn-icon" src="/mascot-160.png" /> Hỏi AI Guide về địa điểm này
+            </button>
+          )}
 
           {!activeCategory && (
             <button className="secondary-btn" onClick={onPlan} type="button">
