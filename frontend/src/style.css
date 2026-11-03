@@ -445,36 +445,6 @@ body {
   }
 }
 
-/* ---------- Màn hình QR ---------- */
-
-.qr-start-page {
-  justify-content: flex-start;
-}
-
-/* Mã QR trong một "tấm vé" bo tròn, viền chấm như vé xé. */
-.qr-frame {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 28px 20px;
-  border: 3px dashed #bfe0cc;
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.7);
-  text-align: center;
-  color: var(--ink-soft);
-  font-family: var(--font-display);
-  font-weight: 700;
-}
-
-.qr-code {
-  padding: 14px;
-  border-radius: var(--radius);
-  background: #fff;
-  box-shadow: var(--shadow);
-  line-height: 0;
-}
-
 /* ---------- Màn hình video ---------- */
 
 .video-page {
@@ -1766,38 +1736,6 @@ body {
     align-self: flex-start;
   }
 
-  /* QR: chữ bên trái, mã QR bên phải */
-  .qr-start-page {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    align-items: center;
-    gap: 48px;
-    min-height: 100dvh;
-  }
-
-  .qr-start-page .topbar {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 24px;
-  }
-
-  .qr-start-page .topbar h2 {
-    font-size: 40px;
-  }
-
-  .qr-start-page .mascot-hello {
-    --size: 128px;
-  }
-
-  .qr-frame {
-    padding: 40px;
-  }
-
-  .qr-code svg {
-    width: 240px;
-    height: 240px;
-  }
-
   /* Video: video bên trái, chữ và nút bên phải */
   .video-page {
     display: grid;
@@ -2144,19 +2082,13 @@ body {
     min-height: calc(100dvh - 56px);
   }
 
-  .qr-start-page,
   .video-page,
   .thankyou-page {
     min-height: 0;
     padding-block: 48px;
   }
 
-  .qr-start-page .mascot-hello,
   .video-page .mascot-hello {
     display: none;
-  }
-
-  .qr-start-page .topbar {
-    grid-template-columns: 1fr;
   }
 }

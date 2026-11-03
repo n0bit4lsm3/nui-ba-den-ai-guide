@@ -14,7 +14,7 @@ export default function ThankYouPage({ onRestart }) {
         </p>
 
         <button className="primary-btn" onClick={onRestart}>
-          Về màn hình quét QR
+          Về trang đầu
         </button>
       </div>
     </div>

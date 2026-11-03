@@ -1,16 +1,15 @@
-import { Check, Clapperboard, MapPin, MessageCircleHeart, PhoneCall, QrCode } from 'lucide-react';
+import { Check, Clapperboard, MapPin, MessageCircleHeart, PhoneCall } from 'lucide-react';
 
 import MascotHello from './MascotHello';
 
-// Desktop shell: a sticky side panel with the guide, the four steps of the
+// Desktop shell: a sticky side panel with the guide, the three steps of the
 // journey and the hotline. Hidden on phones, where each page fills the screen.
 const STEPS = [
-  { key: 'qr', label: 'Quét mã QR', icon: QrCode, order: 1 },
-  { key: 'video', label: 'Xem video', icon: Clapperboard, order: 2 },
-  { key: 'landing', label: 'Chọn địa điểm', icon: MapPin, order: 3 },
-  { key: 'chatbot', label: 'Hỏi AI Guide', icon: MessageCircleHeart, order: 4 },
+  { key: 'video', label: 'Xem video', icon: Clapperboard, order: 1 },
+  { key: 'landing', label: 'Chọn địa điểm', icon: MapPin, order: 2 },
+  { key: 'chatbot', label: 'Hỏi AI Guide', icon: MessageCircleHeart, order: 3 },
 ];
-const STEP_ORDER = { qr: 1, video: 2, landing: 3, itinerary: 3, chatbot: 4, thankyou: 5 };
+const STEP_ORDER = { video: 1, landing: 2, itinerary: 2, chatbot: 3, thankyou: 4 };
 
 export default function AppFrame({ step, destination, onGo, children }) {
   const current = STEP_ORDER[step] || 1;

@@ -6,22 +6,21 @@ import AppFrame from './components/AppFrame';
 import ChatbotPage from './pages/ChatbotPage';
 import ItineraryPage from './pages/ItineraryPage';
 import LandingPage from './pages/LandingPage';
-import QRScanPage from './pages/QRScanPage';
 import ThankYouPage from './pages/ThankYouPage';
 import VideoPage from './pages/VideoPage';
 import { API_URL } from './api';
 
 // Each step has its own path so it can be opened, refreshed and shared directly.
-// The selected destination travels in `?dest=<id>`.
+// The selected destination travels in `?dest=<id>`. The intro video is the
+// home page; a QR code printed on site opens `/?qr=<code>` (or `/<code>`).
 const STEP_PATHS = {
-  qr: '/',
-  video: '/video',
+  video: '/',
   landing: '/landing',
   itinerary: '/itinerary',
   chatbot: '/chatbot',
   thankyou: '/thankyou',
 };
-const PATH_STEPS = Object.fromEntries(Object.entries(STEP_PATHS).map(([step, path]) => [path, step]));
+const PATH_STEPS = { ...Object.fromEntries(Object.entries(STEP_PATHS).map(([step, path]) => [path, step])), '/video': 'video' };
 
 function readLocation() {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -30,12 +29,12 @@ function readLocation() {
   // Any other path is treated as a QR code, e.g. /ECO_NUI_BA_DEN_001.
   const qrCode = params.get('qr') || (step ? '' : decodeURIComponent(path.slice(1)));
   const destId = Number(params.get('dest')) || null;
-  return { step: step || 'qr', qrCode, destId };
+  return { step: step || 'video', qrCode, destId };
 }
 
 function urlFor(step, destination) {
   const path = STEP_PATHS[step] || '/';
-  return destination?.id && step !== 'qr' ? `${path}?dest=${destination.id}` : path;
+  return destination?.id ? `${path}?dest=${destination.id}` : path;
 }
 
 function App() {
@@ -79,7 +78,7 @@ function App() {
             return;
           }
         } catch (e) {}
-        go('qr', null, { replace: true });
+        go('video', null, { replace: true });
         return;
       }
 
@@ -98,13 +97,10 @@ function App() {
   }, []);
 
   return (
-    <AppFrame destination={destination} onGo={(next) => go(next === 'qr' ? 'qr' : next, next === 'qr' ? null : destination)} step={step}>
-      {step === 'qr' && <QRScanPage onSuccess={(data) => go('video', data)} />}
-
+    <AppFrame destination={destination} onGo={(next) => go(next, destination)} step={step}>
       {step === 'video' && (
         <VideoPage
           destination={destination}
-          onBack={() => go('qr', null)}
           onNext={() => go('landing')}
         />
       )}
@@ -139,7 +135,7 @@ function App() {
         />
       )}
 
-      {step === 'thankyou' && <ThankYouPage onRestart={() => go('qr', null)} />}
+      {step === 'thankyou' && <ThankYouPage onRestart={() => go('video', null)} />}
     </AppFrame>
   );
 }
