@@ -609,6 +609,7 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
 
   return (
     <div className="phone">
+      <div className="chat-bg" aria-hidden="true" />
       <div className="page chatbot-page">
         <div className="chatbot-nav-row">
           <button className="back-btn" onClick={onBack}>

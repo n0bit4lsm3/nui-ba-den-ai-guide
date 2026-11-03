@@ -149,7 +149,8 @@ a {
     radial-gradient(ellipse 100px 44px at 640px 180px, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 72%);
   background-size: 820px 320px;
   opacity: 0.9;
-  animation: drift 110s linear infinite;
+  will-change: background-position, transform;
+  animation: drift 38s linear infinite, float 9s ease-in-out infinite;
 }
 
 .phone::after {
@@ -160,7 +161,8 @@ a {
     radial-gradient(ellipse 130px 40px at 430px 170px, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 72%);
   background-size: 620px 260px;
   opacity: 0.7;
-  animation: drift-back 75s linear infinite;
+  will-change: background-position, transform;
+  animation: drift-back 26s linear infinite, float 7s ease-in-out 1.5s infinite reverse;
 }
 
 .page,
@@ -185,6 +187,53 @@ a {
 @keyframes drift-back {
   to {
     background-position: -620px 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) scale(1.03);
+  }
+}
+
+/* Nền màn chat: ảnh Núi Bà Đen đội mây (Sun World, bài 20189) phóng chậm
+ * qua lại như camera lia, phủ lớp trắng để chữ dễ đọc. */
+.chat-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.chat-bg::before {
+  content: "";
+  position: absolute;
+  inset: -6%;
+  background: url("/bg-nuibaden.jpg") center 35% / cover no-repeat;
+  will-change: transform;
+  animation: kenburns 36s ease-in-out infinite alternate;
+}
+
+.chat-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(243, 246, 242, 0.74) 0, rgba(243, 246, 242, 0.82) 100%);
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1) translate(0, 0);
+  }
+
+  to {
+    transform: scale(1.12) translate(-2.5%, 2%);
   }
 }
 
@@ -750,9 +799,7 @@ a {
 .page.chatbot-page {
   gap: 0;
   padding: 0;
-  background:
-    linear-gradient(180deg, rgba(243, 246, 242, 0.78) 0, rgba(243, 246, 242, 0.84) 100%),
-    url("/bg-nuibaden.jpg") center 30% / cover no-repeat;
+  background: transparent;
 }
 
 .chatbot-page .chatbot-nav-row,
@@ -1651,7 +1698,8 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .phone::before,
-  .phone::after {
+  .phone::after,
+  .chat-bg::before {
     animation: none;
   }
 
