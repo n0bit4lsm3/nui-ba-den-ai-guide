@@ -123,20 +123,99 @@ body {
 }
 
 .app-shell {
+  --bar-h: 60px;
   min-height: 100dvh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   position: relative;
   z-index: 0;
 }
 
-.app-sidebar {
+/* Thanh trên cùng: logo, tiến trình 3 bước, nút hỗ trợ. */
+.app-bar {
+  position: relative;
+  z-index: 2;
+  min-height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.app-brand img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--peach);
+}
+
+.app-brand span {
   display: none;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.app-brand b {
+  font-weight: 700;
+  color: var(--green-deep);
+}
+
+.app-steps {
+  display: none;
+}
+
+.app-step-mobile {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-support {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 1px solid #c7def0;
+  border-radius: 999px;
+  background: var(--sky-soft);
+  color: var(--sky);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 .phone {
   width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--bar-h));
   display: flex;
   position: relative;
   z-index: 1;
@@ -2049,7 +2128,7 @@ body {
     align-content: start;
     column-gap: 16px;
     row-gap: 20px;
-    min-height: 100dvh;
+    min-height: calc(100dvh - var(--bar-h));
     text-align: center;
   }
 
@@ -2279,7 +2358,7 @@ body {
   }
 
   .thankyou-page {
-    min-height: 100dvh;
+    min-height: calc(100dvh - var(--bar-h));
   }
 
   .thankyou-page .small-text {
@@ -2287,95 +2366,80 @@ body {
   }
 }
 
-/* ---------- Laptop: bảng bên với nhân vật + 4 bước, nội dung trong tấm thẻ bo tròn ---------- */
+/* ---------- Từ 900px: hiện đủ 3 bước trên thanh trên cùng ---------- */
 
-@media (min-width: 1024px) {
-  .app-shell {
-    display: grid;
-    grid-template-columns: 260px minmax(0, 1fr);
-    gap: 24px;
-    width: min(1400px, 100%);
-    margin: 0 auto;
-    padding: 28px;
-    align-items: start;
+@media (min-width: 900px) {
+  .app-brand span {
+    display: inline;
   }
 
-  .app-sidebar {
-    position: sticky;
-    top: 28px;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 28px 22px 22px;
-    border: 2px solid #fff;
-    border-radius: 36px;
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow);
-  }
-
-  .app-sidebar-hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    text-align: center;
-  }
-
-  .app-sidebar-hero .mascot-hello {
-    margin: 8px 0 10px;
-  }
-
-  .app-sidebar-hero b {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 1.15;
+  .app-step-mobile {
+    display: none;
   }
 
   .app-steps {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  .app-steps li {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+  }
+
+  /* Gạch nối mảnh giữa các bước. */
+  .app-steps li + li::before {
+    content: "";
+    width: 24px;
+    height: 1px;
+    margin-right: 4px;
+    background: var(--line-strong);
   }
 
   .app-steps button {
-    width: 100%;
-    min-height: 52px;
-    display: flex;
+    min-height: 40px;
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    border: 2px solid transparent;
+    gap: 8px;
+    padding: 4px 14px 4px 6px;
+    border: 1px solid transparent;
     border-radius: 999px;
     background: transparent;
+    font-size: var(--text-sm);
     font-weight: 600;
-    text-align: left;
+    white-space: nowrap;
     cursor: pointer;
+  }
+
+  .app-steps button:not(:disabled):hover {
+    background: var(--mist);
   }
 
   .app-steps button:disabled {
     color: var(--ink-soft);
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
   }
 
-  .app-step-icon {
-    width: 36px;
-    height: 36px;
+  .app-step-no {
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--line-strong);
     border-radius: 50%;
-    background: var(--mist);
-    color: var(--ink-soft);
+    background: #fff;
+    font-size: var(--text-xs);
   }
 
-  .app-steps .is-done .app-step-icon {
+  .app-steps .is-done .app-step-no {
+    border-color: transparent;
     background: var(--green-tint);
     color: var(--green-deep);
   }
@@ -2386,47 +2450,39 @@ body {
     color: var(--peach-ink);
   }
 
-  .app-steps .is-active .app-step-icon {
-    background: #fff;
-    color: var(--peach-ink);
+  .app-steps .is-active .app-step-no {
+    border-color: transparent;
+    background: var(--peach-ink);
+    color: #fff;
   }
 
-  .app-hotline {
-    width: 100%;
-    border: 0;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    display: grid;
-    grid-template-columns: 40px 1fr;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 22px;
-    background: var(--sky-soft);
-    color: var(--ink);
-    text-decoration: none;
+  .app-support {
+    margin-left: 0;
+  }
+}
+
+/* ---------- Laptop: thanh trên cùng bo tròn, nội dung trong tấm thẻ trắng ---------- */
+
+@media (min-width: 1024px) {
+  .app-shell {
+    --bar-h: 64px;
+    width: min(1400px, 100%);
+    margin: 0 auto;
+    padding: 20px 28px 28px;
+    gap: 20px;
   }
 
-  .app-hotline svg {
-    justify-self: center;
-    color: var(--sky);
-  }
-
-  .app-hotline small {
-    display: block;
-  }
-
-  .app-hotline b {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--sky);
+  .app-bar {
+    position: sticky;
+    top: 20px;
+    padding: 10px 12px 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(21, 34, 28, 0.08);
   }
 
   .phone {
-    min-height: calc(100dvh - 56px);
-    border: 2px solid #fff;
+    border: 1px solid var(--line);
     border-radius: 36px;
     background: var(--paper);
     box-shadow: var(--shadow);
@@ -2439,7 +2495,7 @@ body {
 
   .phone:has(.chatbot-page),
   .phone:has(.hero) {
-    min-height: calc(100dvh - 56px);
+    min-height: calc(100dvh - var(--bar-h) - 68px);
   }
 
   .video-page,
