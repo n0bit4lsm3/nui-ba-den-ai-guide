@@ -9,8 +9,13 @@ const str = (v) => (v == null ? '' : String(v).trim());
 
 // Sheets that describe how the old rule engine worked, not the destination.
 const SKIP_SHEETS = new Set(['_meta', 'chatbot_intents', 'chatbot_rules', 'media_assets']);
-// Columns that only help a keyword matcher or point at files.
-const SKIP_FIELDS = new Set(['query_keywords', 'keywords', 'seo_keyword', 'search_aliases', 'image_url', 'priority', 'display_priority', 'sort_order']);
+// Columns still searched but not sent to the model: keywords, links, internal
+// bookkeeping. They made up about a third of every prompt.
+const SKIP_FIELDS = new Set([
+  'query_keywords', 'keywords', 'seo_keyword', 'search_aliases', 'image_url', 'priority', 'display_priority', 'sort_order',
+  'source_url', 'source_update', 'last_updated', 'last_verified', 'answer_strategy', 'note', 'related_sheet', 'related_id',
+  'related_faq', 'related_questions', 'data_type', 'intent', 'topic', 'data_update_rule', 'google_maps_search_url',
+]);
 
 const normalize = (v) => str(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd')
   .replace(/[^a-z0-9]+/g, ' ').trim();
@@ -46,12 +51,13 @@ function buildDocs() {
     for (const row of rows) {
       if (!isUsable(sheet, row)) continue;
       const id = rowId(sheet, row);
+      // The row id is already in the header, so *_id columns other than place codes are dropped too.
       const lines = Object.entries(row)
-        .filter(([k, v]) => !SKIP_FIELDS.has(k) && str(v))
+        .filter(([k, v]) => !SKIP_FIELDS.has(k) && !(k.endsWith('_id') && k !== 'dest_id' && k !== 'place_id') && str(v))
         .map(([k, v]) => `${k}: ${str(v)}`);
       const text = `[${id}] (${sheet})\n${lines.join('\n')}`;
-      // Search terms include the keyword columns the text leaves out.
-      const searchable = `${text} ${str(row.query_keywords)} ${str(row.keywords)} ${str(row.search_aliases)} ${str(row.seo_keyword)}`;
+      // Search the sent text plus the keyword columns written for matching.
+      const searchable = [text, row.query_keywords, row.keywords, row.search_aliases, row.seo_keyword, row.topic].map(str).join(' ');
       // source_url sometimes carries notes after the link ("…/gia-ve ; ảnh bảng giá: …").
       const sourceUrl = (str(row.source_url).match(/https?:\/\/[^\s;,|]+/) || [''])[0];
       docs.push({ id, sheet, destId: str(row.dest_id), sourceUrl, text, terms: terms(searchable) });
@@ -92,7 +98,7 @@ function bm25(doc, queryTerms, { df, avgLen, docs }) {
 
 // `context` is earlier user turns, so follow-ups like "còn trẻ em thì sao?"
 // still find the rows of the topic being discussed.
-function search(question, { context = '', destCode = '', limit = 24 } = {}) {
+function search(question, { context = '', destCode = '', limit = 12 } = {}) {
   const idx = getIndex();
   const queryTerms = [...new Set(terms(question))];
   const contextTerms = [...new Set(terms(context))].filter((t) => !queryTerms.includes(t));
@@ -103,14 +109,23 @@ function search(question, { context = '', destCode = '', limit = 24 } = {}) {
       return { doc, score };
     })
     .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((s) => s.doc);
+    .sort((a, b) => b.score - a.score);
+  // Drop the long tail of weak matches: they cost tokens and rarely help.
+  const top = scored.length ? scored[0].score : 0;
+  // At most a few rows per sheet, so the many FAQ rows don't crowd out the
+  // price and opening-hours tables.
+  const perSheet = {};
+  const docs = [];
+  for (const { doc, score } of scored) {
+    if (score < top * 0.3 || docs.length >= limit) break;
+    if ((perSheet[doc.sheet] = (perSheet[doc.sheet] || 0) + 1) > 5) continue;
+    docs.push(doc);
+  }
 
   // The destination the visitor picked is always in context.
   const picked = destCode && idx.docs.find((d) => d.sheet === 'destinations' && d.id === destCode);
-  if (picked && !scored.includes(picked)) scored.unshift(picked);
-  return scored;
+  if (picked && !docs.includes(picked)) docs.unshift(picked);
+  return docs;
 }
 
 function destinationNames() {

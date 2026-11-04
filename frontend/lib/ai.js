@@ -86,6 +86,7 @@ function buildRetrieval({ dest, docs, usedIds, citations, usage }) {
     model: MODEL(), used_llm: true, context_count: docs.length, used_ids: usedIds,
     destination_id: dest ? dest.id : null, destination: dest || null,
     web_searches: usage?.server_tool_use_details?.web_search_requests || 0, cost: usage?.cost ?? null,
+    input_tokens: usage?.prompt_tokens ?? null, output_tokens: usage?.completion_tokens ?? null,
     media, sources: sources.slice(0, 5), followups: [],
   };
 }
@@ -126,10 +127,17 @@ async function readStream(res, onToken) {
   return { text, citations, usage };
 }
 
+// Only the last two exchanges matter for follow-ups; earlier replies are
+// trimmed since the knowledge base is re-sent every turn anyway.
 function toMessages(history) {
   return (history || [])
     .filter((h) => str(h.content) && ['user', 'assistant', 'bot'].includes(str(h.role).toLowerCase()))
-    .map((h) => ({ role: str(h.role).toLowerCase() === 'user' ? 'user' : 'assistant', content: str(h.content) }));
+    .slice(-4)
+    .map((h) => {
+      const role = str(h.role).toLowerCase() === 'user' ? 'user' : 'assistant';
+      const content = str(h.content);
+      return { role, content: role === 'assistant' && content.length > 400 ? `${content.slice(0, 400)}…` : content };
+    });
 }
 
 /** Answers one chat turn. With onToken, visible text is streamed as it arrives. */
@@ -166,7 +174,7 @@ async function answer({ message, destination_id, history = [] }, onToken) {
           ...toMessages(history),
           { role: 'user', content: userPrompt(question, docs) },
         ],
-        tools: [{ type: 'openrouter:web_search', parameters: { engine: 'exa', max_results: 5, max_uses: 2, max_total_results: 8 } }],
+        tools: [{ type: 'openrouter:web_search', parameters: { engine: 'exa', max_results: 3, max_uses: 1, max_characters: 1500 } }],
       }),
     });
     if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`);
