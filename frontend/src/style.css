@@ -222,18 +222,6 @@ body {
   overflow: hidden;
 }
 
-@media (max-width: 1023px) {
-  /* Trang video: nhân vật nhỏ lại, không bong bóng, để tiêu đề không bị che. */
-  .video-page .mascot-hello {
-    --size: 72px;
-    align-self: flex-start;
-  }
-
-  .video-page .mascot-hello-bubble {
-    display: none;
-  }
-}
-
 /* Mây trôi: hai lớp mây vẽ bằng radial-gradient, lặp theo chiều ngang và
  * dịch đúng một ô nền mỗi vòng nên không thấy chỗ nối. Nằm dưới nội dung. */
 .app-shell::before,
@@ -2502,9 +2490,5 @@ body {
   .thankyou-page {
     min-height: 0;
     padding-block: 22px 26px;
-  }
-
-  .video-page .mascot-hello {
-    display: none;
   }
 }

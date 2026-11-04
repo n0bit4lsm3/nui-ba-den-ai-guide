@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ArrowLeft, Camera, Clock, Flower2, GraduationCap, Hourglass, Landmark, Moon, Sun, Sunrise, Users,
+  ArrowLeft, Camera, Clock, Flower2, Heart, Hourglass, Landmark, Moon, Sun, Sunrise, Users, UsersRound, UtensilsCrossed,
 } from 'lucide-react';
 
 import { API_URL, assetUrl } from '../api';
 
-// Both choices are matched against text columns of the itineraries sheet, so a
+// All choices are matched against text columns of the itineraries sheet, so a
 // new row in Excel shows up here without code changes.
 const TIMES = [
   { key: 'dawn', label: 'Sáng sớm', hint: 'Chuyến cáp đầu', icon: Sunrise, match: (it) => /sáng sớm/i.test(it.best_time) },
@@ -14,22 +14,27 @@ const TIMES = [
   { key: 'evening', label: 'Chiều tối', hint: 'Sau 17h', icon: Moon, match: (it) => /17h|tối|đêm/i.test(`${it.best_time} ${it.title}`) },
 ];
 
+// The suitable_for column mixes reasons for the trip with who comes along, so
+// the two are asked separately.
 const PURPOSES = [
   { key: 'pilgrim', label: 'Hành hương', icon: Flower2, match: (it) => /tâm linh/i.test(it.suitable_for) },
-  { key: 'photo', label: 'Săn mây, chụp ảnh', icon: Camera, match: (it) => /photo|check-in|couple/i.test(it.suitable_for) },
-  { key: 'family', label: 'Gia đình', icon: Users, match: (it) => /gia đình|lớn tuổi/i.test(it.suitable_for) },
+  { key: 'photo', label: 'Săn mây, chụp ảnh', icon: Camera, match: (it) => /photo|check-in/i.test(it.suitable_for) },
   { key: 'history', label: 'Lịch sử, văn hóa', icon: Landmark, match: (it) => /lịch sử|văn hóa/i.test(it.suitable_for) },
-  { key: 'student', label: 'Sinh viên', icon: GraduationCap, match: (it) => /sinh viên/i.test(it.suitable_for) },
+  { key: 'food', label: 'Ăn uống', icon: UtensilsCrossed, match: (it) => /ẩm thực/i.test(it.suitable_for) },
 ];
 
-function rank(itineraries, time, purpose) {
-  const timeDef = TIMES.find((item) => item.key === time);
-  const purposeDef = PURPOSES.find((item) => item.key === purpose);
+const COMPANIONS = [
+  { key: 'family', label: 'Gia đình', hint: 'Có người lớn tuổi', icon: Users, match: (it) => /gia đình|lớn tuổi/i.test(it.suitable_for) },
+  { key: 'couple', label: 'Cặp đôi', hint: 'Đi hai người', icon: Heart, match: (it) => /couple/i.test(it.suitable_for) },
+  { key: 'friends', label: 'Bạn bè', hint: 'Nhóm trẻ, sinh viên', icon: UsersRound, match: (it) => /nhóm trẻ|sinh viên/i.test(it.suitable_for) },
+];
+
+function rank(itineraries, picks) {
+  const defs = [[TIMES, picks.time], [PURPOSES, picks.purpose], [COMPANIONS, picks.companion]]
+    .map(([options, key]) => options.find((item) => item.key === key))
+    .filter(Boolean);
   return itineraries
-    .map((it) => ({
-      it,
-      score: (timeDef && timeDef.match(it) ? 2 : 0) + (purposeDef && purposeDef.match(it) ? 2 : 0),
-    }))
+    .map((it) => ({ it, score: defs.reduce((sum, def) => sum + (def.match(it) ? 2 : 0), 0) }))
     .sort((a, b) => b.score - a.score);
 }
 
@@ -88,6 +93,7 @@ export default function ItineraryPage({ onBack, onAsk }) {
   const [loadError, setLoadError] = useState(false);
   const [time, setTime] = useState(null);
   const [purpose, setPurpose] = useState(null);
+  const [companion, setCompanion] = useState(null);
   const [pickedId, setPickedId] = useState(null);
 
   useEffect(() => {
@@ -101,10 +107,13 @@ export default function ItineraryPage({ onBack, onAsk }) {
 
   useEffect(() => {
     setPickedId(null);
-  }, [time, purpose]);
+  }, [time, purpose, companion]);
 
-  const ranked = useMemo(() => rank(itineraries, time, purpose), [itineraries, time, purpose]);
-  const hasChoice = Boolean(time || purpose);
+  const ranked = useMemo(
+    () => rank(itineraries, { time, purpose, companion }),
+    [itineraries, time, purpose, companion],
+  );
+  const hasChoice = Boolean(time || purpose || companion);
   const best = pickedId
     ? itineraries.find((it) => it.id === pickedId)
     : hasChoice && ranked[0]?.score > 0
@@ -121,11 +130,12 @@ export default function ItineraryPage({ onBack, onAsk }) {
 
         <div>
           <h2>Lên lịch trình</h2>
-          <p className="small-text">Chọn hai điều bên dưới, mình gợi ý lộ trình phù hợp từ các lịch trình có sẵn.</p>
+          <p className="small-text">Chọn vài điều bên dưới, mình gợi ý lộ trình phù hợp từ các lịch trình có sẵn.</p>
         </div>
 
         <ChoiceGroup label="Bạn có bao nhiêu thời gian?" options={TIMES} value={time} onChange={setTime} />
         <ChoiceGroup label="Bạn đi để làm gì?" options={PURPOSES} value={purpose} onChange={setPurpose} />
+        <ChoiceGroup label="Bạn đi cùng ai?" options={COMPANIONS} value={companion} onChange={setCompanion} />
 
         {loadError && <p className="plan-empty">Chưa tải được lịch trình. Kiểm tra kết nối rồi thử lại.</p>}
 
