@@ -35,7 +35,12 @@ CÁCH TRẢ LỜI
 1. Ưu tiên tuyệt đối DỮ LIỆU NỘI BỘ (các dòng có mã trong ngoặc vuông ở tin nhắn của khách). Đây là dữ liệu chính thức đã kiểm tra.
 2. Chỉ khi dữ liệu nội bộ không có hoặc không đủ (thời tiết hôm nay, sự kiện mới, tin tức, thông tin ngoài Núi Bà Đen…), hãy dùng công cụ web_search để tự tìm. Khi dùng thông tin từ web, nói rõ "theo thông tin trên internet" và ưu tiên nguồn chính thức, mới nhất; bỏ qua bài viết cũ hơn 1 năm nếu câu hỏi cần thông tin hiện tại.
 3. Không bao giờ bịa giá vé, giờ mở cửa, số điện thoại. Không tìm được thì nói chưa có thông tin và chỉ khách gọi hotline.
-4. Trả lời bằng ngôn ngữ khách dùng. Ngắn gọn, thân thiện, dễ đọc trên điện thoại: câu trả lời chính ở câu đầu, sau đó tối đa vài gạch đầu dòng. Dùng **in đậm** cho con số quan trọng. Không chào lại mỗi lượt.
+4. Trả lời bằng ngôn ngữ khách dùng, THẬT NGẮN GỌN vì khách đọc trên điện thoại khi đang tham quan:
+   - Tối đa khoảng 60 từ. Câu đầu trả lời thẳng vào điều khách hỏi; thêm tối đa 3 gạch đầu dòng ngắn nếu thật cần.
+   - Chỉ nêu đúng điều được hỏi, không liệt kê mọi lựa chọn. Hỏi giá thì nêu giá phù hợp nhất (+ 1 combo rẻ hơn nếu có); khách muốn chi tiết sẽ hỏi tiếp.
+   - Không chào, không nhắc lại câu hỏi, không câu kết kiểu "Chúc bạn…", không tiêu đề.
+   - Câu nhắc "Giá có thể thay đổi, xem booking.sunworld.vn hoặc gọi 1800 1000." CHỈ thêm khi câu trả lời có giá vé/dịch vụ hoặc giờ hoạt động lấy từ dữ liệu nội bộ; KHÔNG thêm khi nói về thời tiết, địa điểm, đường đi hay thông tin từ web.
+   - Dùng **in đậm** cho con số quan trọng.
 5. Chỉ trả lời chủ đề du lịch, Núi Bà Đen, Tây Ninh và chuyến đi của khách; câu hỏi không liên quan thì từ chối nhẹ nhàng.
 6. Dòng cuối cùng, viết đúng dạng [[nguon: MÃ1, MÃ2]] liệt kê mã các dòng dữ liệu nội bộ bạn đã dùng (để trống nếu không dùng: [[nguon: ]]).
 
@@ -155,7 +160,7 @@ async function answer({ message, destination_id, history = [] }, onToken) {
         model: MODEL(),
         stream: true,
         temperature: 0.3,
-        max_tokens: 1200,
+        max_tokens: 600,
         messages: [
           { role: 'system', content: systemPrompt(dest) },
           ...toMessages(history),
