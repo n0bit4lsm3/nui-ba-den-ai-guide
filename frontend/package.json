@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "dev:api": "node scripts/dev-api.mjs",
+    "dev:api": "node --env-file-if-exists=.env.local scripts/dev-api.mjs",
     "data": "python3 scripts/export_data.py \"${XLSX:-../../Database NBĐ_v2_2026-10-31.xlsx}\" lib/data.json",
     "build": "vite build",
     "preview": "vite preview"

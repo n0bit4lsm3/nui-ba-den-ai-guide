@@ -1,11 +1,8 @@
-// Data + chat logic shared by the Vercel serverless functions in /api.
-// Port of backend/app/db/postgres.py (destinations) and
-// backend/app/services/chat_service.py + rule_engine.py (chat), minus the
-// Python-only RAG/LLM/web-search path, which the deployed app does not use.
+// Data shared by the Vercel serverless functions in /api (port of
+// backend/app/db/postgres.py). The chat itself lives in ai.js.
 'use strict';
 
 const data = require('./data.json');
-const { createBot } = require('./engine.js');
 
 const QR_CODES = {
   ECO_NUI_BA_DEN_001: { destination_id: 1, expired: false },
@@ -129,103 +126,4 @@ function itineraries() {
   });
 }
 
-// ---------- destination resolution (chat_service.resolve_destination) ----------
-
-const normalizePlace = (v) => str(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd')
-  .replace(/[^a-z0-9]+/g, ' ').trim();
-const GENERIC_ALIASES = new Set(['ba den', 'dia diem', 'khu du lich', 'nui ba', 'nui ba den', 'tay ninh']);
-const LOCAL_SCOPE = ['dia diem nay', 'ngay day', 'o day', 'tai day', 'cho nay'];
-const GLOBAL_SCOPE = ['cac dia diem', 'cac tuyen', 'khu du lich', 'nui ba den', 'tat ca', 'toan bo', 'toan khu', 'tong cong', 'tong gia'];
-
-function destinationAliases(name) {
-  const normalized = normalizePlace(name);
-  const aliases = new Set([normalized]);
-  for (const part of name.split(/\s*(?:\/|[-–—])\s*/)) aliases.add(normalizePlace(part));
-  const words = normalized.split(' ');
-  for (let i = 1; i < Math.max(1, words.length - 1); i++) aliases.add(words.slice(i).join(' '));
-  return [...aliases].filter((a) => a.split(' ').length >= 2 && !GENERIC_ALIASES.has(a));
-}
-
-function isGlobalQuestion(question) {
-  const n = normalizePlace(question);
-  if (!n || LOCAL_SCOPE.some((m) => n.includes(m))) return false;
-  if (GLOBAL_SCOPE.some((m) => n.includes(m))) return true;
-  return n.includes('cap treo');
-}
-
-function resolveDestination(question, selectedId, history) {
-  const all = destinations();
-  const aliasesById = new Map([...all].map(([id, d]) => [id, destinationAliases(d.name)]));
-  const owners = {};
-  for (const [id, aliases] of aliasesById) for (const a of aliases) (owners[a] = owners[a] || new Set()).add(id);
-
-  const match = (text) => {
-    const t = ` ${normalizePlace(text)} `; let best = null;
-    for (const [id, aliases] of aliasesById) for (const a of aliases) {
-      if (owners[a].size === 1 && t.includes(` ${a} `) && (!best || a.length > best.len)) best = { id, len: a.length };
-    }
-    return best ? [best.id, all.get(best.id)] : null;
-  };
-
-  const current = match(question); if (current) return current;
-  if (isGlobalQuestion(question)) return [null, null];
-  for (const item of [...(history || [])].reverse()) {
-    if (str(item.role).toLowerCase() !== 'user') continue;
-    const h = match(str(item.content)); if (h) return h;
-  }
-  const selected = selectedId ? all.get(Number(selectedId)) : null;
-  return [selected ? Number(selectedId) : null, selected || null];
-}
-
-// ---------- chat (rule_engine_reply) ----------
-
-// \b is ASCII-only in JS, so use Unicode lookarounds for Vietnamese words.
-const LOCAL_REF_RE = /(?<![\p{L}\p{N}])(ở đây|tại đây|chỗ này|địa điểm này|nơi này)(?![\p{L}\p{N}])/giu;
-const scopedQuestion = (q, dest) => (dest && dest.name ? q.replace(LOCAL_REF_RE, `ở ${dest.name}`) : q);
-const NO_INFO = 'chưa có thông tin** chính thức';
-const SOURCE_LABELS = [['sunworld.vn', 'Sun World Ba Den Mountain'], ['khudulichnuibaden.tayninh.gov.vn', 'Ban quản lý KDL Núi Bà Đen']];
-
-function todayInVietnam() {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-  const [y, m, d] = parts.split('-').map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function engineSources(urls) {
-  const out = [];
-  for (const url of urls || []) {
-    let host = ''; try { host = new URL(url).hostname; } catch { continue; }
-    const label = (SOURCE_LABELS.find(([domain]) => host.endsWith(domain)) || [null, host])[1];
-    out.push({ title: label || 'Nguồn tham khảo', url, source_type: 'database' });
-  }
-  return out.slice(0, 5);
-}
-
-function relatedMedia(dest) {
-  if (!dest || !dest.image_url) return [];
-  return [{ url: dest.image_url, caption: dest.image_caption || dest.name, alt: dest.image_alt || dest.name, source_url: dest.source_url, destination: dest.name }];
-}
-
-function answer({ message, destination_id, session_id = 'default', history = [] }) {
-  const question = str(message);
-  const [destId, dest] = resolveDestination(question, destination_id, history);
-  const today = todayInVietnam();
-
-  // Serverless functions keep no state: replay the previous user turn so the
-  // engine's follow-up context ("còn trẻ em thì sao?") is restored.
-  const bot = createBot(data);
-  const previous = [...history].reverse().find((h) => str(h.role).toLowerCase() === 'user' && str(h.content));
-  if (previous) { try { bot.ask(scopedQuestion(str(previous.content), dest), { today }); } catch {} }
-  const result = bot.ask(scopedQuestion(question, dest), { today });
-
-  const intent = str(result.intent);
-  const retrieval = {
-    top_k: (result.rows || []).length, context_count: 0, used_llm: false, model: 'rule-engine',
-    destination_id: destId, destination: dest, session_id, intent, clarified: intent === 'clarify',
-    media: intent === 'destination_detail' ? relatedMedia(dest) : [],
-    sources: engineSources(result.sources), followups: (result.followups || []).slice(0, 4),
-  };
-  return { answer: str(result.text), retrieval, has_answer: !!result.text && !result.text.includes(NO_INFO) };
-}
-
-module.exports = { QR_CODES, SUPPORT, data, destinations, itineraries, answer, resolveDestination };
+module.exports = { QR_CODES, SUPPORT, data, destinations, itineraries };

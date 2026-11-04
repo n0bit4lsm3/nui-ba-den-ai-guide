@@ -4,5 +4,13 @@
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 60
+    },
+    "api/chat/stream.js": {
+      "maxDuration": 60
+    }
+  }
 }

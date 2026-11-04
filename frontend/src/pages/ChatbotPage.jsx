@@ -406,7 +406,7 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
 
     async function askWithoutStream() {
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 20000);
+      const timeout = window.setTimeout(() => controller.abort(), 60000);
 
       try {
         const fallbackRes = await fetch(`${API_URL}/api/chat`, {
@@ -431,7 +431,7 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
 
     try {
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 45000);
+      const timeout = window.setTimeout(() => controller.abort(), 60000);
 
       const res = await fetch(`${API_URL}/api/chat/stream`, {
         method: 'POST',
