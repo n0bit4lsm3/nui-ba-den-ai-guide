@@ -7,7 +7,7 @@ import { API_URL, assetUrl } from '../api';
 
 // All choices are matched against text columns of the itineraries sheet, so a
 // new row in Excel shows up here without code changes.
-const TIMES = [
+export const TIMES = [
   { key: 'dawn', label: 'Sáng sớm', hint: 'Chuyến cáp đầu', icon: Sunrise, match: (it) => /sáng sớm/i.test(it.best_time) },
   { key: 'half', label: 'Nửa ngày', hint: 'Khoảng 3–4 giờ', icon: Hourglass, match: (it) => /^0\.5/.test(it.duration) },
   { key: 'full', label: 'Cả ngày', hint: 'Sáng đến chiều', icon: Sun, match: (it) => /^1 ngày/.test(it.duration) },
@@ -16,20 +16,20 @@ const TIMES = [
 
 // The suitable_for column mixes reasons for the trip with who comes along, so
 // the two are asked separately.
-const PURPOSES = [
+export const PURPOSES = [
   { key: 'pilgrim', label: 'Hành hương', icon: Flower2, match: (it) => /tâm linh/i.test(it.suitable_for) },
   { key: 'photo', label: 'Săn mây, chụp ảnh', icon: Camera, match: (it) => /photo|check-in/i.test(it.suitable_for) },
   { key: 'history', label: 'Lịch sử, văn hóa', icon: Landmark, match: (it) => /lịch sử|văn hóa/i.test(it.suitable_for) },
   { key: 'food', label: 'Ăn uống', icon: UtensilsCrossed, match: (it) => /ẩm thực/i.test(it.suitable_for) },
 ];
 
-const COMPANIONS = [
+export const COMPANIONS = [
   { key: 'family', label: 'Gia đình', hint: 'Có người lớn tuổi', icon: Users, match: (it) => /gia đình|lớn tuổi/i.test(it.suitable_for) },
   { key: 'couple', label: 'Cặp đôi', hint: 'Đi hai người', icon: Heart, match: (it) => /couple/i.test(it.suitable_for) },
   { key: 'friends', label: 'Bạn bè', hint: 'Nhóm trẻ, sinh viên', icon: UsersRound, match: (it) => /nhóm trẻ|sinh viên/i.test(it.suitable_for) },
 ];
 
-function rank(itineraries, picks) {
+export function rank(itineraries, picks) {
   const defs = [[TIMES, picks.time], [PURPOSES, picks.purpose], [COMPANIONS, picks.companion]]
     .map(([options, key]) => options.find((item) => item.key === key))
     .filter(Boolean);

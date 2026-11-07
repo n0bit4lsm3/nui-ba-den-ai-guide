@@ -1,9 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, MoreHorizontal, PhoneCall, Send } from 'lucide-react';
+import { BowlFood, Clock, CloudSun, Compass, MapTrifold, Ticket } from '@phosphor-icons/react';
 
 import { API_URL, assetUrl } from '../api';
-import MascotHello from '../components/MascotHello';
+import { BrandMark, Logo } from '../components/Brand';
 import SupportSheet from '../components/SupportSheet';
+
+const SUGGESTIONS = [
+  { icon: Compass, label: 'Có gì chơi?', question: 'Có gì chơi ở đây?' },
+  { icon: Ticket, label: 'Giá vé cáp treo?', question: 'Giá vé cáp treo bao nhiêu?' },
+  { icon: Clock, label: 'Giờ cáp treo?', question: 'Cáp treo chạy mấy giờ?' },
+  { icon: BowlFood, label: 'Ăn uống ở đâu?', question: 'Ăn uống trên núi thế nào?' },
+  { icon: CloudSun, label: 'Săn mây lúc nào?', question: 'Nên đi săn mây lúc nào?' },
+  { icon: MapTrifold, label: 'Gợi ý lịch trình', question: 'Gợi ý lịch trình đi Núi Bà Đen' },
+];
 
 
 function isSafeUrl(url) {
@@ -139,7 +149,7 @@ function stripCalloutLabel(block) {
   return String(block || '').trim().replace(CALLOUT_LABEL_PATTERN, '').trim();
 }
 
-function MarkdownMessage({ text }) {
+export function MarkdownMessage({ text }) {
   const blocks = normalizeMarkdownText(text).split(/\n{2,}/);
 
   return (
@@ -553,115 +563,117 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
     setStreamingText('');
   }
 
+  const BotAvatar = () => <span className="cb2-avatar"><img alt="AI Guide" src="/ai-avatar.png" /></span>;
+
   return (
-    <div className="phone">
-      <div className="chat-bg" aria-hidden="true" />
-      <div className="page chatbot-page">
-        <div className="chatbot-nav-row">
-          <button className="back-btn" onClick={onBack}>
-            <ArrowLeft size={22} /> <img alt="" src="/mascot-160.png" /> <span>{destination?.name || 'Địa điểm'}</span>
-          </button>
-          <button
-            aria-controls="support-dialog"
-            aria-expanded={supportOpen}
-            aria-label="Mở hotline và hỗ trợ khi bị lạc"
-            className="support-trigger"
-            onClick={() => setSupportOpen(true)}
-            title="Hotline & hỗ trợ"
-            type="button"
-          >
-            <PhoneCall aria-hidden="true" size={22} />
-          </button>
-          <div className="chatbot-menu-wrap" ref={menuRef}>
-            <button
-              aria-controls="chatbot-actions"
-              aria-expanded={menuOpen}
-              aria-label="Tùy chọn trải nghiệm"
-              className="chatbot-menu-trigger"
-              onClick={() => setMenuOpen((open) => !open)}
-              type="button"
-            >
-              <MoreHorizontal aria-hidden="true" size={22} />
-            </button>
-            {menuOpen && (
-              <div className="chatbot-actions" id="chatbot-actions">
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setConfirmDoneOpen(true);
-                  }}
-                  type="button"
-                >
-                  Hoàn tất trải nghiệm
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+    <div className="cb2" style={{ '--hero-img': 'url(/hero-vista.jpg)' }}>
+      <nav className="cb2-nav" aria-label="Điều hướng chính">
+        <button className="cb2-brand" onClick={onBack} type="button" aria-label="Về trang chủ"><BrandMark /></button>
+        <button className="home-support cb2-support" onClick={() => setSupportOpen(true)} type="button">
+          <PhoneCall size={16} /> Hỗ trợ
+        </button>
+      </nav>
 
-        {!hasAsked && (
-          <div className="quick-questions" aria-label="Câu hỏi gợi ý">
-            <button onClick={() => ask('Có gì chơi ở đây?')}><em>🎡</em>Có gì chơi?</button>
-            <button onClick={() => ask('Giá vé cáp treo bao nhiêu?')}><em>🎫</em>Giá vé cáp treo?</button>
-            <button onClick={() => ask('Cáp treo chạy mấy giờ?')}><em>🕒</em>Giờ cáp treo?</button>
-            <button onClick={() => ask('Ăn uống trên núi thế nào?')}><em>🍜</em>Ăn uống ở đâu?</button>
-            <button onClick={() => ask('Nên đi săn mây lúc nào?')}><em>☁️</em>Săn mây lúc nào?</button>
-            <button onClick={() => ask('Gợi ý lịch trình đi Núi Bà Đen')}><em>🗺️</em>Gợi ý lịch trình</button>
-          </div>
-        )}
-
-        {!hasAsked && (
-          <div className="chat-intro">
-            <MascotHello bubble={false} size={64} />
-            <span>
-              <b>AI Guide Núi Bà Đen</b>
-              <small>Hỏi gì cũng được, mình trả lời theo dữ liệu chính thức.</small>
+      <section className="cb2-card">
+        <header className="cb2-head">
+          <img alt="" className="cb2-mascot" src="/ai-avatar.png" />
+          <span className="cb2-title">
+            <b>AI Guide Núi Bà Đen</b>
+            <small><i className="cb2-online" /> Trả lời theo dữ liệu chính thức của khu du lịch</small>
+          </span>
+          {destination?.name && (
+            <span className="cb2-topic" title="Đang hỏi về địa điểm này">
+              {destination.image_url && <img alt="" src={assetUrl(destination.image_url)} />}
+              {destination.name}
             </span>
-          </div>
-        )}
-
-        <div className="chat-box" aria-live="polite" ref={chatBoxRef}>
-          {messages.map((message, index) => (
-            <div className={`msg ${message.role === 'user' ? 'user' : 'bot'}`} key={index}>
-              <MarkdownMessage text={message.text} />
-              {message.role === 'bot' && <MessageMedia media={message.media} />}
-              {message.role === 'bot' && <MessageSources sources={message.sources} />}
-              {message.role === 'bot' && !loading && index === messages.length - 1 && message.followups?.length > 0 && (
-                <div className="quick-questions followup-questions" aria-label="Hỏi tiếp">
-                  {message.followups.map((question) => (
-                    <button key={question} onClick={() => ask(question)} type="button">{question}</button>
-                  ))}
+          )}
+          <div className="cb2-actions">
+            <button className="explore-back" onClick={onBack} type="button"><ArrowLeft size={18} /> Trang chủ</button>
+            <div className="chatbot-menu-wrap" ref={menuRef}>
+              <button
+                aria-controls="chatbot-actions"
+                aria-expanded={menuOpen}
+                aria-label="Tùy chọn trải nghiệm"
+                className="cb2-menu"
+                onClick={() => setMenuOpen((open) => !open)}
+                type="button"
+              >
+                <MoreHorizontal aria-hidden="true" size={20} />
+              </button>
+              {menuOpen && (
+                <div className="chatbot-actions" id="chatbot-actions">
+                  <button onClick={() => { setMenuOpen(false); setConfirmDoneOpen(true); }} type="button">
+                    Hoàn tất trải nghiệm
+                  </button>
                 </div>
               )}
             </div>
+          </div>
+        </header>
+
+        <div className="cb2-body" aria-live="polite" ref={chatBoxRef}>
+          {!hasAsked && (
+            <div className="cb2-welcome">
+              <h2>Xin chào! Mình là AI Guide 👋</h2>
+              <p>Hỏi mình bất cứ điều gì về {destination?.name || 'Núi Bà Đen'}: giá vé, giờ cáp treo, ăn uống, đường đi…</p>
+              <div className="cb2-suggest" aria-label="Câu hỏi gợi ý">
+                {SUGGESTIONS.map(({ icon: Icon, label, question }) => (
+                  <button key={label} onClick={() => ask(question)} type="button">
+                    <span><Icon size={22} weight="duotone" /></span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasAsked && messages.map((message, index) => (
+            message.role === 'user' ? (
+              <div className="cb2-msg is-user" key={index}><p>{message.text}</p></div>
+            ) : (
+              <div className="cb2-msg" key={index}>
+                <BotAvatar />
+                <div className="cb2-bubble">
+                  <MarkdownMessage text={message.text} />
+                  <MessageMedia media={message.media} />
+                  <MessageSources sources={message.sources} />
+                  {!loading && index === messages.length - 1 && message.followups?.length > 0 && (
+                    <div className="cb2-followups" aria-label="Hỏi tiếp">
+                      {message.followups.map((question) => (
+                        <button key={question} onClick={() => ask(question)} type="button">{question}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
           ))}
           {loading && (
-            <div className="msg bot streaming-bubble">
-              {visibleStreamingText ? (
-                <>
-                  <MarkdownMessage text={visibleStreamingText} />
-                  <span className="typing-cursor" />
-                </>
-              ) : (
-                <span className="typing-dots" aria-label="Đang trả lời"><i /><i /><i /></span>
-              )}
+            <div className="cb2-msg">
+              <BotAvatar />
+              <div className="cb2-bubble">
+                {visibleStreamingText ? (
+                  <><MarkdownMessage text={visibleStreamingText} /><span className="typing-cursor" /></>
+                ) : (
+                  <span className="home-typing" aria-label="Đang trả lời"><i /><i /><i /></span>
+                )}
+              </div>
             </div>
           )}
           <div ref={bottomRef} />
         </div>
 
-        <form className="chat-input" onSubmit={(event) => { event.preventDefault(); ask(); }}>
+        <form className="home-chat-form cb2-input" onSubmit={(event) => { event.preventDefault(); ask(); }}>
           <input
             disabled={loading}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Nhập câu hỏi"
+            placeholder={loading ? 'AI Guide đang trả lời…' : 'Hỏi AI Guide về giá vé, cáp treo, đường đi…'}
             ref={inputRef}
             value={input}
           />
-          <button aria-label="Gửi câu hỏi" disabled={loading || !input.trim()} type="submit">
-            <Send size={20} /> Gửi
-          </button>
+          <button aria-label="Gửi câu hỏi" disabled={loading || !input.trim()} type="submit"><Send fill="currentColor" size={18} /></button>
         </form>
+      </section>
 
         {confirmDoneOpen && (
           <div className="finish-overlay" onClick={() => setConfirmDoneOpen(false)} role="presentation">
@@ -687,8 +699,7 @@ export default function ChatbotPage({ destination, initialQuestion, onInitialQue
           </div>
         )}
 
-        <SupportSheet onClose={() => setSupportOpen(false)} open={supportOpen} />
-      </div>
+      <SupportSheet onClose={() => setSupportOpen(false)} open={supportOpen} />
     </div>
   );
 }

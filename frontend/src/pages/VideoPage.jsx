@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { Lock } from 'lucide-react';
+import { ArrowRight, Lock, PhoneCall } from 'lucide-react';
 
 import { assetUrl } from '../api';
+import { BrandMark } from '../components/Brand';
 
 const INTRO_VIDEO_URL = import.meta.env.VITE_INTRO_VIDEO_URL || 'https://res.cloudinary.com/df6nsfnjk/video/upload/q_auto/f_auto/v1780989537/intro_nui_ba_den_xzcgcs.mp4';
 
@@ -36,19 +37,23 @@ export default function VideoPage({ destination, onNext, onWatched, watched }) {
   }, [destination?.id]);
 
   return (
-    <div className="phone">
-      <div className="page video-page">
-        <div className="topbar">
-          <div>
-            <h2>Khám phá nhanh Núi Bà Đen</h2>
-            <p className="small-text">Video dài khoảng 1 phút. Xem xong, bạn chọn địa điểm rồi hỏi AI Guide.</p>
-          </div>
-        </div>
+    <div className="vid2" style={{ '--hero-img': 'url(/hero-vista.jpg)' }}>
+      <nav className="cb2-nav" aria-label="Điều hướng chính">
+        <BrandMark />
+        <button className="home-support cb2-support" onClick={() => window.dispatchEvent(new Event('nbd:support'))} type="button">
+          <PhoneCall size={16} /> Hỗ trợ
+        </button>
+      </nav>
 
-        <div className="video-box">
+      <main className="vid2-main">
+        <header className="vid2-head">
+          <span className="home-script">Chào mừng đến</span>
+          <h1>Khám phá nhanh Núi Bà Đen</h1>
+        </header>
+
+        <div className="vid2-frame">
           <video
             ref={videoRef}
-            className="intro-video"
             autoPlay
             controls
             playsInline
@@ -60,10 +65,12 @@ export default function VideoPage({ destination, onNext, onWatched, watched }) {
           />
         </div>
 
-        <button className="primary-btn" disabled={!watched} onClick={onNext}>
-          {watched ? 'Chọn địa điểm' : <><Lock size={18} /> Xem hết video để tiếp tục</>}
-        </button>
-      </div>
+        <div className="vid2-foot">
+          <button className={watched ? 'vid2-cta is-ready' : 'vid2-cta'} disabled={!watched} onClick={onNext} type="button">
+            {watched ? <>Bắt đầu khám phá <ArrowRight size={18} /></> : <><Lock size={16} /> Xem hết video để tiếp tục</>}
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

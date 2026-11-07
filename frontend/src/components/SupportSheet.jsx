@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PhoneCall, X } from 'lucide-react';
+import { Buildings, ChatCircleText, HandPalm, Headset, Lifebuoy, MapPinLine, Phone, Siren, X } from '@phosphor-icons/react';
 
 import { API_URL } from '../api';
 
@@ -17,6 +17,10 @@ const FALLBACK_SUPPORT = {
     { kind: 'visitor_support', name: 'Sun World Ba Den Mountain', phone: '0327222227', display_phone: '0327 222 227', description: 'Hỗ trợ dịch vụ và vấn đề phát sinh khi tham quan.' },
   ],
 };
+
+// Icons for the three "khi bị lạc" steps (in sheet order) and for each hotline kind.
+const STEP_ICONS = [HandPalm, MapPinLine, ChatCircleText];
+const CONTACT_ICONS = { emergency: Siren, management: Buildings, visitor_support: Headset };
 
 export default function SupportSheet({ open, onClose }) {
   const [support, setSupport] = useState(FALLBACK_SUPPORT);
@@ -43,52 +47,79 @@ export default function SupportSheet({ open, onClose }) {
 
   if (!open) return null;
 
+  const contacts = support.contacts || FALLBACK_SUPPORT.contacts;
+  const emergency = contacts.find((contact) => contact.kind === 'emergency');
+  const hotlines = contacts.filter((contact) => contact !== emergency);
+  const steps = support.lost_guidance || FALLBACK_SUPPORT.lost_guidance;
+
   return (
-    <div className="support-overlay" onClick={onClose} role="presentation">
+    <div className="sup2-overlay" onClick={onClose} role="presentation">
       <section
         aria-labelledby="support-title"
         aria-modal="true"
-        className="support-sheet"
+        className="sup2"
         id="support-dialog"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
-        <div className="support-sheet-header">
-          <div>
-            <small>Hỗ trợ an toàn</small>
-            <h3 id="support-title">Khi bị lạc trên Núi Bà Đen</h3>
+        <header className="sup2-head">
+          <span className="sup2-badge"><Lifebuoy size={22} weight="duotone" /></span>
+          <span>
+            <h3 id="support-title">Hỗ trợ &amp; hotline</h3>
+            <small>Núi Bà Đen luôn có người sẵn sàng giúp bạn</small>
+          </span>
+          <button aria-label="Đóng" className="sup2-close" onClick={onClose} type="button"><X size={18} /></button>
+        </header>
+
+        {emergency && (
+          <a className="sup2-sos" href={`tel:${emergency.phone}`}>
+            <span className="sup2-sos-icon"><Siren size={26} weight="duotone" /></span>
+            <span className="sup2-sos-text">
+              <b>Khẩn cấp: gọi {emergency.display_phone || emergency.phone}</b>
+              <small>{emergency.description} Chỉ gọi khi có nguy hiểm, tai nạn.</small>
+            </span>
+            <span className="sup2-sos-call"><Phone size={18} weight="fill" /> Gọi {emergency.display_phone || emergency.phone}</span>
+          </a>
+        )}
+
+        <div className="sup2-body">
+          <div className="sup2-col">
+            <h4>Khi bị lạc trên núi</h4>
+            <ol className="sup2-steps">
+              {steps.map((item, index) => {
+                const Icon = STEP_ICONS[index] || ChatCircleText;
+                return (
+                  <li key={item}>
+                    <span className="sup2-step-icon"><Icon size={20} weight="duotone" /><em>{index + 1}</em></span>
+                    <p>{item}</p>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
-          <button aria-label="Đóng" onClick={onClose} type="button">
-            <X size={19} />
-          </button>
+
+          <div className="sup2-col">
+            <h4>Hotline hỗ trợ</h4>
+            <div className="sup2-contacts">
+              {hotlines.map((contact) => {
+                const Icon = CONTACT_ICONS[contact.kind] || Headset;
+                return (
+                  <div className="sup2-contact" key={`${contact.kind}-${contact.phone}`}>
+                    <span className="sup2-contact-icon"><Icon size={20} weight="duotone" /></span>
+                    <span className="sup2-contact-info">
+                      <b>{contact.name}</b>
+                      <strong>{contact.display_phone || contact.phone}</strong>
+                      <small>{contact.description}</small>
+                    </span>
+                    <a aria-label={`Gọi ${contact.name}`} className="sup2-call" href={`tel:${contact.phone}`}>
+                      <Phone size={16} weight="fill" /> Gọi
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-
-        <ol className="lost-guidance">
-          {(support.lost_guidance || FALLBACK_SUPPORT.lost_guidance).map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ol>
-
-        <div className="support-contact-list">
-          {(support.contacts || FALLBACK_SUPPORT.contacts).map((contact) => (
-            <a
-              className={`support-contact ${contact.kind === 'emergency' ? 'is-emergency' : ''}`}
-              href={`tel:${contact.phone}`}
-              key={`${contact.kind}-${contact.phone}`}
-            >
-              <span className="support-phone-icon"><PhoneCall size={18} /></span>
-              <span>
-                <b>{contact.name}</b>
-                <strong>{contact.display_phone || contact.phone}</strong>
-                <small>{contact.description}</small>
-              </span>
-            </a>
-          ))}
-        </div>
-
-        <p className="support-warning">
-          Chỉ gọi 112 khi có nguy hiểm, tai nạn hoặc cần cứu nạn khẩn cấp.
-        </p>
       </section>
     </div>
   );

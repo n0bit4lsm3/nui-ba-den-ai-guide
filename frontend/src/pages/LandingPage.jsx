@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, MapPin, Mountain, Navigation, Rou
 
 import { API_URL, assetUrl } from '../api';
 
-const LOCATION_CATEGORIES = [
+export const LOCATION_CATEGORIES = [
   {
     key: 'summit',
     label: 'Đỉnh núi',
@@ -12,7 +12,7 @@ const LOCATION_CATEGORIES = [
   },
   {
     key: 'slope',
-    label: 'Sườn núi',
+    label: 'Thân núi',
     description: 'Các điểm tâm linh, hang động và tuyến tham quan ở sườn núi.',
     icon: Sparkles,
   },
@@ -33,7 +33,7 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-function categoryFor(destination) {
+export function categoryFor(destination) {
   const text = normalizeText(
     [destination?.location, destination?.category, destination?.name].filter(Boolean).join(' '),
   );
@@ -51,7 +51,7 @@ function destinationText(destination) {
   return destination.description_detail || '';
 }
 
-function destinationMedia(destination) {
+export function destinationMedia(destination) {
   const gallery = Array.isArray(destination?.media_assets)
     ? destination.media_assets.filter((media) => media?.url)
     : [];
@@ -67,11 +67,11 @@ function destinationMedia(destination) {
   }];
 }
 
-export default function LandingPage({ destination, onBack, onNext, onPlan }) {
+export default function LandingPage({ destination, initialCategory = null, onBack, onNext, onPlan }) {
   const [destinations, setDestinations] = useState(destination ? [destination] : []);
   // The QR destination is only used as initial data while the full list loads.
   // Users must still choose a region, then a destination, before entering AI Guide.
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [selectedId, setSelectedId] = useState(null);
   const [typedText, setTypedText] = useState('');
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
@@ -214,7 +214,7 @@ export default function LandingPage({ destination, onBack, onNext, onPlan }) {
       <div className={activeCategory ? 'hero landing-explore' : 'hero landing-explore is-zones'}>
         <div style={heroStyle}>
           <button className="back-btn hero-back-btn" onClick={handleBack}>
-            <ArrowLeft size={22} /> {selectedDestination ? 'Danh sách' : activeCategory ? 'Khu vực' : 'Video'}
+            <ArrowLeft size={22} /> {selectedDestination ? 'Danh sách' : activeCategory ? 'Khu vực' : 'Trang chủ'}
           </button>
 
           <h1>{selectedDestination?.name || activeLabel || 'Chọn khu vực'}</h1>

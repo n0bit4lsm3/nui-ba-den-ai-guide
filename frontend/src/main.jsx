@@ -5,6 +5,7 @@ import './style.css';
 import AppFrame from './components/AppFrame';
 import ChatbotPage from './pages/ChatbotPage';
 import ItineraryPage from './pages/ItineraryPage';
+import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage';
 import ThankYouPage from './pages/ThankYouPage';
 import VideoPage from './pages/VideoPage';
@@ -16,6 +17,7 @@ import { API_URL } from './api';
 const STEP_PATHS = {
   video: '/',
   landing: '/landing',
+  explore: '/explore',
   itinerary: '/itinerary',
   chatbot: '/chatbot',
   thankyou: '/thankyou',
@@ -43,6 +45,8 @@ function App() {
   const [destination, setDestination] = useState(null);
   // Question handed to the chatbot by the itinerary planner.
   const [pendingQuestion, setPendingQuestion] = useState(null);
+  // Zone (summit / slope / foot) chosen on the home page.
+  const [exploreZone, setExploreZone] = useState(null);
   // Later steps open only after the intro video has been watched once (kept
   // for the tab, so a refresh on /landing does not send people back).
   const [videoWatched, setVideoWatched] = useState(() => {
@@ -120,9 +124,22 @@ function App() {
       )}
 
       {step === 'landing' && (
+        <HomePage
+          destination={destination}
+          onAskAbout={(dest) => go('chatbot', dest)}
+          onOpenChat={() => go('chatbot')}
+          onAsk={(question) => {
+            setPendingQuestion(question);
+            go('chatbot');
+          }}
+        />
+      )}
+
+      {step === 'explore' && (
         <LandingPage
           destination={destination}
-          onBack={() => go('video')}
+          initialCategory={exploreZone}
+          onBack={() => go('landing')}
           onNext={(data) => go('chatbot', data || destination)}
           onPlan={() => go('itinerary')}
         />
