@@ -3147,3 +3147,8 @@ body {
   .vid2-main { justify-content: center; padding-bottom: 48px; }
   .vid2-frame { border-radius: 16px; }
 }
+
+/* Linh vật hero: cô gái đội nón trong video (ảnh dọc, chân bị cắt nên giấu sau khối nội dung). */
+.home-mascot-row img.home-mascot-girl { width: 150px; height: auto; filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35)); }
+@media (min-width: 900px) { .home-hero-mascot { bottom: -34px; } }
+.explore-primary img { border-radius: 50%; }

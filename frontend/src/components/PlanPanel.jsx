@@ -157,7 +157,7 @@ export default function PlanPanel({ onClose, onAsk }) {
                 onClick={() => onAsk(/^lịch trình/i.test(best.title) ? best.title : `Lịch trình ${best.title}`)}
                 type="button"
               >
-                <img alt="" src="/mascot-hero.png" /> Hỏi AI Guide về lịch trình này
+                <img alt="" src="/ai-avatar.png" /> Hỏi AI Guide về lịch trình này
               </button>
             </>
           )}

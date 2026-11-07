@@ -132,7 +132,7 @@ export default function HomePage({ destination, onAsk, onAskAbout, onOpenChat })
               <path d="M17 3C9 12 8 24 14 29c7 5 13-3 8-8s-14 0-12 10c2 10 15 17 30 16" />
               <path d="M40 47l-8-6M40 47l-9 5" />
             </svg>
-            <img alt="" src="/mascot-hero.png" />
+            <img alt="AI Guide vẫy tay chào" className="home-mascot-girl" src="/mascot-girl.png" />
           </span>
         </div>
       </section>

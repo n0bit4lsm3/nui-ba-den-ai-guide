@@ -85,7 +85,7 @@ export default function ExplorePanel({ destinations, initialZone = 'all', onClos
             {selected.navigation_note && <p className="explore-note">{selected.navigation_note}</p>}
             <div className="explore-actions">
               <button className="explore-primary" onClick={() => onAskAbout(selected)} type="button">
-                <img alt="" src="/mascot-hero.png" /> Hỏi AI Guide về địa điểm này
+                <img alt="" src="/ai-avatar.png" /> Hỏi AI Guide về địa điểm này
               </button>
               {selected.google_maps_url && (
                 <a className="explore-secondary" href={selected.google_maps_url} rel="noreferrer" target="_blank">
